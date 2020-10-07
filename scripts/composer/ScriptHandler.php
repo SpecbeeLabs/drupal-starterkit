@@ -172,7 +172,7 @@ class ScriptHandler {
     $fs = new Filesystem();
     $root = self::getRoot();
     $grumphp_config = Yaml::parse(file_get_contents($root . "/grumphp.yml"));
-    $grumphp_config['parameters']['tasks']['git_commit_message']['Must follow the pattern'] = '/(^' . $config['project']['prefix'] . '-[0-9]+(: )[^ ].{15,}\.)|(Merge branch (.)+)/';
+    $grumphp_config['parameters']['tasks']['git_commit_message']['matchers']['Must follow the pattern'] = '/(^' . $config['project']['prefix'] . '-[0-9]+(: )[^ ].{15,}\.)|(Merge branch (.)+)/';
     file_put_contents($root . "/grumphp.yml", Yaml::dump($grumphp_config, 5, 2));
     $event->getIO()->write("Grumphp is setup to watch the commits!");
   }
