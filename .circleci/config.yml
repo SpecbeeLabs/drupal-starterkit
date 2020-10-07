@@ -99,4 +99,3 @@ workflows:
     jobs:
       - run-code-sniffer
       - run-yarn-lint
-      - run-behat-tests

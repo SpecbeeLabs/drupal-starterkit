@@ -1,0 +1,15 @@
+project:
+  machine_name: specbee
+  prefix: SB
+  human_name: "Specbee"
+drush:
+  dev:
+    host: ec2-52-66-118-196.ap-south-1.compute.amazonaws.com
+    user: ubuntu
+    root: /var/www/html/great-southern-homes/dev/web
+    uri: https://dev-gsh.specbee.in/
+  stage:
+    host: ec2-52-66-118-196.ap-south-1.compute.amazonaws.com
+    user: ubuntu
+    root: /var/www/html/great-southern-homes/dev/web
+    uri: https://dev-gsh.specbee.in/

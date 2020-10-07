@@ -7,6 +7,7 @@ use Composer\Semver\Comparator;
 use Drupal\Core\Site\Settings;
 use DrupalFinder\DrupalFinder;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Yaml\Yaml;
 use Webmozart\PathUtil\Path;
 
 /**
@@ -120,6 +121,58 @@ class ScriptHandler {
       $fs->chmod($drupalRoot . '/sites/default/settings.local.php', 0666);
       $event->getIO()->write("Created a sites/default/settings.local.php file with chmod 0666 for local setup.");
     }
+  }
+
+  /**
+   * Setup Drush aliases.
+   */
+  public static function setupDrupalAlias(Event $event) {
+    $config = self::getConfig();
+    $fs = new Filesystem();
+    $drupalFinder = new DrupalFinder();
+    $drupalFinder->locateRoot(getcwd());
+    $root = $drupalFinder->getComposerRoot();
+
+    if (!$fs->exists($root . '/drush/sites/' . $config['project']['machine_name'] . 'site.yml')) {
+      $fs->rename($root . '/drush/sites/default.site.yml', $root . '/drush/sites/' . $config['project']['machine_name'] . '.site.yml');
+      $drush_config = Yaml::parse(file_get_contents($root . '/drush/sites/' . $config['project']['machine_name'] . '.site.yml'));
+      foreach ($config['drush'] as $env => $value) {
+        $drush_config[$env]['host'] = $value['host'];
+        $drush_config[$env]['user'] = $value['user'];
+        $drush_config[$env]['root'] = $value['root'];
+        $drush_config[$env]['uri'] = $value['uri'];
+      }
+      file_put_contents($root . '/drush/sites/' . $config['project']['machine_name'] . '.site.yml', Yaml::dump($drush_config, 5, 2));
+      $event->getIO()->write("Aliases were written, type 'drush sa' to see them");
+    }
+  }
+
+  /**
+   * Setup Lando.
+   */
+  public static function setupLando(Event $event) {
+    $config = self::getConfig();
+    $fs = new Filesystem();
+    $drupalFinder = new DrupalFinder();
+    $drupalFinder->locateRoot(getcwd());
+    $root = $drupalFinder->getComposerRoot();
+
+    $lando_config = Yaml::parse(file_get_contents($root . "/.lando.yml"));
+    $lando_config['name'] = $config['project']['machine_name'];
+    $lando_config['services']['appserver']['environment']['DRUSH_OPTIONS_URI'] = $config['project']['machine_name'] . '.lndo.site';
+    file_put_contents($root . "/.lando.yml", Yaml::dump($lando_config, 5, 2));
+    $event->getIO()->write("Your app has been initialized!");
+  }
+
+  /**
+   * Get the project configurations.
+   */
+  private static function getConfig() {
+    $drupalFinder = new DrupalFinder();
+    $drupalFinder->locateRoot(getcwd());
+    $root = $drupalFinder->getComposerRoot();
+    $config = Yaml::parse(file_get_contents($root . "/config.yml"));
+    return $config;
   }
 
 }

@@ -1,0 +1,45 @@
+name: specbee
+recipe: drupal9
+config:
+  webroot: docroot
+  php: '7.3'
+  xdebug: false
+services:
+  appserver:
+    build:
+      - '/bin/sh -c "echo ''\033[1;32mRunning Composer Install.... \033[0;37m'' && cd $LANDO_MOUNT && COMPOSER_MEMORY_LIMIT=-1 composer install -vvv "'
+    environment:
+      DRUSH_OPTIONS_ROOT: /app/docroot
+      DRUSH_OPTIONS_URI: specbee.lndo.site
+  mailhog:
+    type: mailhog
+    hogfrom:
+      - appserver
+    portforward: true
+  node:
+    type: 'node:12'
+    globals:
+      gulp-cli: latest
+      npm: 6.4.1
+      yarn: latest
+  database:
+    type: 'mariadb:10.4'
+    creds:
+      user: drupal
+      password: drupal
+      database: drupal
+  search:
+    type: 'elasticsearch:7'
+    portforward: true
+    mem: 1025m
+    environment:
+      - cluster.name=drupal
+  cache:
+    type: redis:4.0
+    portforward: 6380
+    persist: true
+tooling:
+  yarn:
+    service: node
+  redis-cli:
+    service: cache
