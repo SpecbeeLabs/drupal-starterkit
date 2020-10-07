@@ -7,14 +7,19 @@
         "acquia/lightning": "~5.0.0",
         "cweagans/composer-patches": "^1.6.0",
         "drupal/core-composer-scaffold": "*",
-        "oomphinc/composer-installers-extender": "^1.1"
+        "oomphinc/composer-installers-extender": "^1.1",
+        "vlucas/phpdotenv": "^5.2"
     },
     "require-dev": {
         "drush/drush": ">=9.7",
         "zaporylie/composer-drupal-optimizations": "^1.1"
     },
     "config": {
-        "process-timeout": 0
+        "platform": {
+            "php": "7.3"
+        },
+        "process-timeout": 0,
+        "sort-packages": true
     },
     "extra": {
         "composer-exit-on-patch-failure": true,
@@ -67,10 +72,6 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-        "post-create-project-cmd": "rm -r -f .travis.yml .travis-ci",
-        "quick-start": [
-            "composer install",
-            "php docroot/core/scripts/drupal quick-start lightning --no-interaction"
-        ]
+        "post-create-project-cmd": "rm -r -f .travis.yml .travis-ci"
     }
 }
