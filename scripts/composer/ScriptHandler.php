@@ -1,5 +1,7 @@
 <?php
 
+// @codingStandardsIgnoreStart
+
 namespace DrupalProject\composer;
 
 use Composer\Script\Event;
@@ -11,7 +13,9 @@ use Symfony\Component\Yaml\Yaml;
 use Webmozart\PathUtil\Path;
 
 /**
- * Contains \DrupalProject\composer\ScriptHandler.
+ * Composer scripts for setup tasks and files.
+ *
+ * @codeCoverageIgnore
  */
 class ScriptHandler {
 
@@ -129,9 +133,7 @@ class ScriptHandler {
   public static function setupDrupalAlias(Event $event) {
     $config = self::getConfig();
     $fs = new Filesystem();
-    $drupalFinder = new DrupalFinder();
-    $drupalFinder->locateRoot(getcwd());
-    $root = $drupalFinder->getComposerRoot();
+    $root = self::getRoot();
 
     if (!$fs->exists($root . '/drush/sites/' . $config['project']['machine_name'] . 'site.yml')) {
       $fs->rename($root . '/drush/sites/default.site.yml', $root . '/drush/sites/' . $config['project']['machine_name'] . '.site.yml');
@@ -143,7 +145,7 @@ class ScriptHandler {
         $drush_config[$env]['uri'] = $value['uri'];
       }
       file_put_contents($root . '/drush/sites/' . $config['project']['machine_name'] . '.site.yml', Yaml::dump($drush_config, 5, 2));
-      $event->getIO()->write("Aliases were written, type 'drush sa' to see them");
+      $event->getIO()->write("Aliases were written, type 'drush sa' to see them!");
     }
   }
 
@@ -153,9 +155,7 @@ class ScriptHandler {
   public static function setupLando(Event $event) {
     $config = self::getConfig();
     $fs = new Filesystem();
-    $drupalFinder = new DrupalFinder();
-    $drupalFinder->locateRoot(getcwd());
-    $root = $drupalFinder->getComposerRoot();
+    $root = self::getRoot();
 
     $lando_config = Yaml::parse(file_get_contents($root . "/.lando.yml"));
     $lando_config['name'] = $config['project']['machine_name'];
@@ -165,14 +165,37 @@ class ScriptHandler {
   }
 
   /**
+   * Setup Grumphp.
+   */
+  public static function setupGrumphp(Event $event) {
+    $config = self::getConfig();
+    $fs = new Filesystem();
+    $root = self::getRoot();
+    $grumphp_config = Yaml::parse(file_get_contents($root . "/grumphp.yml"));
+    $grumphp_config['parameters']['tasks']['git_commit_message']['Must follow the pattern'] = '/(^' . $config['project']['prefix'] . '-[0-9]+(: )[^ ].{15,}\.)|(Merge branch (.)+)/';
+    file_put_contents($root . "/grumphp.yml", Yaml::dump($grumphp_config, 5, 2));
+    $event->getIO()->write("Grumphp is setup to watch the commits!");
+  }
+
+  /**
    * Get the project configurations.
    */
-  private static function getConfig() {
+  public static function getConfig() {
     $drupalFinder = new DrupalFinder();
     $drupalFinder->locateRoot(getcwd());
     $root = $drupalFinder->getComposerRoot();
     $config = Yaml::parse(file_get_contents($root . "/config.yml"));
     return $config;
+  }
+
+  /**
+   * Get the root folder.
+   */
+  public static function getRoot() {
+    $drupalFinder = new DrupalFinder();
+    $drupalFinder->locateRoot(getcwd());
+    $root = $drupalFinder->getComposerRoot();
+    return $root;
   }
 
 }

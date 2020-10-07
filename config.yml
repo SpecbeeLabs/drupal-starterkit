@@ -2,6 +2,7 @@ project:
   machine_name: specbee
   prefix: SB
   human_name: "Specbee"
+  repo: git@bitbucket.org:team_specbee/stamats-dnn-migration.git
 drush:
   dev:
     host: ec2-52-66-118-196.ap-south-1.compute.amazonaws.com
