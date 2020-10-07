@@ -1,4 +1,4 @@
-name: specbee
+name: projectname
 recipe: drupal9
 config:
   webroot: docroot
@@ -10,7 +10,7 @@ services:
       - '/bin/sh -c "echo ''\033[1;32mRunning Composer Install.... \033[0;37m'' && cd $LANDO_MOUNT && COMPOSER_MEMORY_LIMIT=-1 composer install -vvv "'
     environment:
       DRUSH_OPTIONS_ROOT: /app/docroot
-      DRUSH_OPTIONS_URI: specbee.lndo.site
+      DRUSH_OPTIONS_URI: projectname.lndo.site
   mailhog:
     type: mailhog
     hogfrom:

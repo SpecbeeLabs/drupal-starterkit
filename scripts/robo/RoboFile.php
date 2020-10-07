@@ -9,7 +9,7 @@ use DrupalProject\composer\ScriptHandler;
  */
 class RoboFile extends \Robo\Tasks
 {
-    /**
+  /**
    * Initializes the project repo and performs initial commit.
    */
   public function initRepo() {
@@ -17,6 +17,7 @@ class RoboFile extends \Robo\Tasks
     // The .git dir will already exist if blt-project was created using a
     // branch. Otherwise, it will not exist when using a tag.
     $result = $this->taskGitStack()
+    ->dir((getcwd()).'/../../..')
     ->stopOnFail()
     ->exec('git init')
     ->exec('git remote add origin ' . $config['project']['repo'])

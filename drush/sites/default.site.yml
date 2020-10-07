@@ -1,24 +1,24 @@
 dev:
-    host: ec2-52-66-118-196.ap-south-1.compute.amazonaws.com
-    user: ubuntu
-    root: /var/www/html/great-southern-homes/dev/web
-    uri: 'https://dev-gsh.specbee.in/'
-    paths:
-        -
-            files: sites/default/files
-    command:
-        sql:
-            sync:
-                options: { no-dump: true }
+  host: 
+  user: 
+  root: 
+  uri: 
+  paths:
+    -
+      files: sites/default/files
+  command:
+    sql:
+      sync:
+        options: { no-dump: true }
 stage:
-    host: ec2-52-66-118-196.ap-south-1.compute.amazonaws.com
-    user: ubuntu
-    root: /var/www/html/great-southern-homes/dev/web
-    uri: 'https://dev-gsh.specbee.in/'
-    paths:
-        -
-            files: sites/default/files
-    command:
-        sql:
-            sync:
-                options: { no-dump: true }
+  host: 
+  user: 
+  root: 
+  uri: 
+  paths:
+    -
+      files: sites/default/files
+  command:
+    sql:
+      sync:
+        options: { no-dump: true }

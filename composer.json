@@ -89,14 +89,14 @@
         "post-update-cmd": [
             "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
         ],
-        "post-create-project-cmd": [
+        "drupal-scaffold": [
+            "DrupalComposer\\DrupalScaffold\\Plugin::scaffold"
+        ],
+        "init-repo": [
             "DrupalProject\\composer\\ScriptHandler::setupDrupalAlias",
             "DrupalProject\\composer\\ScriptHandler::setupLando",
             "DrupalProject\\composer\\ScriptHandler::setupGrumphp",
             "robo init:repo --load-from scripts/robo/RoboFile.php"
-        ],
-        "drupal-scaffold": [
-            "DrupalComposer\\DrupalScaffold\\Plugin::scaffold"
         ],
         "setup-local": [
             "DrupalProject\\composer\\ScriptHandler::createLocalSettingsFile"
