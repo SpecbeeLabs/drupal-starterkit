@@ -92,8 +92,8 @@ class RoboFile extends Tasks {
     $config = $this->getConfig();
     $landoFile = $this->getDocroot() . '/.lando.yml';
     $task = $this->taskReplaceInFile($landoFile)
-      ->from('${PROJECT_NAME}')
-      ->to($config['project']['machine_name']);
+      ->from('${PROJECT_PREFIX}')
+      ->to($config['project']['prefix']);
 
     return $task;
   }

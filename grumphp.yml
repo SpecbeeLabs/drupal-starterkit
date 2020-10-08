@@ -43,6 +43,6 @@ parameters:
       enforce_single_lined_subject: true
       max_subject_width: 0
       matchers:
-        'Must follow the pattern': '/(^${PROJECT_NAME}-[0-9]+(: )[^ ].{15,}\.)|(Merge branch (.)+)/'
+        'Must follow the pattern': '/(^${PROJECT_PREFIX}-[0-9]+(: )[^ ].{15,}\.)|(Merge branch (.)+)/'
       case_insensitive: true
       multiline: false
