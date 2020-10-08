@@ -39,7 +39,7 @@ class RoboFile extends Tasks {
     $collection->addTask($this->setupGrumphp());
 
     // Initialize git repo.
-    $collection->addTask($this->setupGit());
+    // $collection->addTask($this->setupGit());
 
     return $collection->run();
   }
@@ -92,8 +92,8 @@ class RoboFile extends Tasks {
     $config = $this->getConfig();
     $landoFile = $this->getDocroot() . '/.lando.yml';
     $task = $this->taskReplaceInFile($landoFile)
-      ->from('${PROJECT_PREFIX}')
-      ->to($config['project']['prefix']);
+      ->from('${PROJECT_NAME}')
+      ->to($config['project']['machine_name']);
 
     return $task;
   }
@@ -105,8 +105,8 @@ class RoboFile extends Tasks {
     $config = $this->getConfig();
     $file = $this->getDocroot() . '/grumphp.yml';
     $task = $this->taskReplaceInFile($file)
-      ->from('${PROJECT_NAME}')
-      ->to($config['project']['machine_name']);
+      ->from('${PROJECT_PREFIX}')
+      ->to($config['project']['prefix']);
 
     return $task;
   }
