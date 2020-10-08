@@ -70,16 +70,16 @@ tooling:
     description: Validating standards on code.
     cmd:
       - echo '\033[0;33m >> Validating standards on code.... \033[0m'
-      - composer validate
-      - composer normalize --dry-run
-      - phpcs --standard='Drupal,DrupalPractice' -n --extensions='php,module,install,theme' docroot/themes/custom docroot/modules/custom --ignore=docroot/themes/*/src/,docroot/themes/*/dist/,docroot/themes/*/Gulpfile.js,docroot/themes/*/node_modules/
-  recipe:init:search:
+      - robo validate:composer --load-from scripts/robo/RoboFile.php
+      - robo validate:phpcs:sniff --load-from scripts/robo/RoboFile.php
+      - robo validate:frontend:src --load-from scripts/robo/RoboFile.php
+  init:service:search:
     service: appserver
     description: Add Elasticsearch support to the app
     cmd:
-      - robo init:recipe-search --load-from scripts/robo/RoboFile.php
-  recipe:init:cache:
+      - robo init:service:search --load-from scripts/robo/RoboFile.php
+  init:service:cache:
     service: appserver
     description: Add Redis cache support to the app
     cmd:
-      - robo init:recipe-redis --load-from scripts/robo/RoboFile.php
+      - robo init:service:cache --load-from scripts/robo/RoboFile.php

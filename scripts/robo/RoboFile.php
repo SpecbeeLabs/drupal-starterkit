@@ -11,8 +11,12 @@
 
 use DrupalFinder\DrupalFinder;
 use Robo\Tasks;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 
+/**
+ *
+ */
 class RoboFile extends Tasks {
 
   /**
@@ -192,8 +196,10 @@ class RoboFile extends Tasks {
 
   /**
    * Setup elastic search.
+   *
+   * @command init:service:search
    */
-  public function initRecipeSearch() {
+  public function initServiceSearch() {
     $config = $this->getConfig();
     $this->say('> init:recipe-search');
     $landoFileConfig = Yaml::parse(file_get_contents($this->getDocroot() . '/.lando.yml', 128));
@@ -240,8 +246,10 @@ class RoboFile extends Tasks {
 
   /**
    * Setup redis.
+   *
+   * @command init:service:cache
    */
-  public function initRecipeRedis() {
+  public function initServiceCache() {
     $this->say('> init:recipe-redis');
     $landoFileConfig = Yaml::parse(file_get_contents($this->getDocroot() . '/.lando.yml', 128));
     $this->say('> Checking if there is cache service is setup.');
@@ -276,6 +284,77 @@ class RoboFile extends Tasks {
     }
     else {
       $this->say('> Cache service exists in the lando configuration. Skipping...');
+    }
+  }
+
+  /**
+   * Validate Composer.
+   *
+   * @command validate:composer
+   */
+  public function validateComposer() {
+    $this->say("Validating composer.json and composer.lock...");
+    $result = $this->taskExecStack()
+      ->dir($this->getDocroot())
+      ->exec('composer validate --no-check-all --ansi')
+      ->exec('composer normalize --dry-run')
+      ->run();
+    if (!$result->wasSuccessful()) {
+      $this->say($result->getMessage());
+      $this->logger->error("composer.lock is invalid.");
+      $this->say("If this is simply a matter of the lock file being out of date, you may attempt to use `composer update --lock` to quickly generate a new hash in your lock file.");
+      $this->say("Otherwise, `composer update` is likely necessary.");
+      throw new Exception("composer.lock is invalid!");
+    }
+  }
+
+  /**
+   * Validate PHP Code sniffer.
+   *
+   * @command validate:phpcs:sniff
+   */
+  public function runPhpcs() {
+    $this->say("Validating Drupal coding standards...");
+    $fs = new Filesystem();
+    if ($fs->exists($this->getDocroot() . '/docroot/modules/custom')) {
+      $this->taskExecStack()
+        ->stopOnFail()
+        ->exec('phpcs -s --standard=Drupal --extensions=php,module,inc,install,profile,theme,yml docroot/modules/custom')
+        ->exec('phpcs -s --standard=DrupalPractice --extensions=php,module,inc,install,profile,theme,yml docroot/modules/custom')
+        ->run();
+    }
+    else {
+      $this->say("No custom modules found. Skipping...");
+    }
+
+    if ($fs->exists($this->getDocroot() . '/docroot/themes/custom')) {
+      $this->taskExecStack()
+        ->stopOnFail()
+        ->exec('phpcs -s --standard=Drupal --extensions=inc,theme,yml docroot/themes/custom')
+        ->exec('phpcs -s --standard=DrupalPractice --extensions=inc,theme,yml docroot/themes/custom')
+        ->run();
+    }
+    else {
+      $this->say("No custom themes found. Skipping...");
+    }
+  }
+
+  /**
+   * Lint frontend source.
+   *
+   * @command validate:frontend:src
+   */
+  public function lintFrontendSrc() {
+    $this->say("Validating Frontend source files...");
+    $config = $this->getConfig();
+    $fs = new Filesystem();
+    if ($fs->exists($this->getDocroot() . '/docroot/themes/custom')) {
+      chdir($this->getDocroot() . '/docroot/themes/custom/' . $config['project']['machine_name'] . '_theme');
+      $this->taskExecStack()
+        ->stopOnFail()
+        ->exec('yarn install')
+        ->exec('yarn lint')
+        ->run();
     }
   }
 

@@ -11,7 +11,9 @@
  * @codeCoverageIgnore
  */
 
+use DrupalFinder\DrupalFinder;
 use Robo\Tasks;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  *
@@ -111,10 +113,11 @@ class RoboFile extends Tasks {
   protected function installDrupal() {
     $task = $this->drush()
       ->args('site-install')
-      ->args('sdnn')
+      ->args('lightning')
       ->option('verbose')
       ->option('yes')
-      ->option('db-url', static::DB_URL, '=');
+      ->option('db-url', static::DB_URL, '=')
+      ->option('existing-config');
     return $task;
   }
 
@@ -125,8 +128,9 @@ class RoboFile extends Tasks {
    */
   protected function runYarn() {
     $task = [];
+    $config = $this->getConfig();
     $task[] = $this->taskExecStack()
-      ->dir('docroot/profiles/custom/sdnn/themes/sdnn_theme')
+      ->dir('docroot/themes/custom/' . $config['project']['machine_name'] . '/themes/' . $config['project']['machine_name'] . '_theme')
       ->exec('yarn install')
       ->exec('yarn build');
     return $task;
@@ -184,6 +188,17 @@ class RoboFile extends Tasks {
   protected function getDocroot() {
     $docroot = (getcwd());
     return $docroot;
+  }
+
+  /**
+   * Get the project configurations.
+   */
+  public static function getConfig() {
+    $drupalFinder = new DrupalFinder();
+    $drupalFinder->locateRoot(getcwd());
+    $root = $drupalFinder->getComposerRoot();
+    $config = Yaml::parse(file_get_contents($root . "/config.yml"));
+    return $config;
   }
 
 }
