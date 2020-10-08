@@ -29,16 +29,6 @@ services:
       user: drupal
       password: drupal
       database: drupal
-  search:
-    type: 'elasticsearch:7'
-    portforward: true
-    mem: 1025m
-    environment:
-      - cluster.name=${PROJECT_NAME}
-  cache:
-    type: 'redis:4.0'
-    portforward: 6380
-    persist: true
 tooling:
   yarn:
     service: node

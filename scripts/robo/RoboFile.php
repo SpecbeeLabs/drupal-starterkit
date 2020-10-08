@@ -55,7 +55,7 @@ class RoboFile extends Tasks {
       ->exec('git init')
       ->exec('git remote add origin ' . $config['project']['repo'])
       ->add('-A')
-      ->commit($config['project']['prefix'] . '-000: Created project from Specbee boilerplate');
+      ->commit($config['project']['prefix'] . '-000: Created project from Specbee boilerplate.');
 
     return $task;
 
