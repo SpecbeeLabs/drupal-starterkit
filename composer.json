@@ -93,9 +93,6 @@
             "DrupalComposer\\DrupalScaffold\\Plugin::scaffold"
         ],
         "init-repo": [
-            "DrupalProject\\composer\\ScriptHandler::setupDrupalAlias",
-            "DrupalProject\\composer\\ScriptHandler::setupLando",
-            "DrupalProject\\composer\\ScriptHandler::setupGrumphp",
             "robo init:repo --load-from scripts/robo/RoboFile.php"
         ],
         "setup-local": [
