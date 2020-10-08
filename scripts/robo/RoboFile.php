@@ -39,7 +39,7 @@ class RoboFile extends Tasks {
     $collection->addTask($this->setupGrumphp());
 
     // Initialize git repo.
-    // $collection->addTask($this->setupGit());
+    $collection->addTask($this->setupGit());
 
     return $collection->run();
   }
