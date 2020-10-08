@@ -1,5 +1,7 @@
 <?php
 
+// @codingStandardsIgnoreStart
+
 namespace Drush\Commands;
 
 use Consolidation\AnnotatedCommand\CommandData;
