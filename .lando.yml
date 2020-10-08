@@ -38,13 +38,16 @@ tooling:
     service: appserver
     description: Install Drupal.
     cmd:
+      - echo -e "\033[0;33m >> Setting up local environment... \033[0m"
+      - composer install -vvv
       - composer setup-local -vvv
-      - robo setup --load-from scripts/robo/RoboFile.php
+      - robo drupal:install --load-from scripts/robo/RoboFile.php
       - drush uli
   sync:all:
     service: appserver
     description: Sync database and files from remote origin
     cmd:
+      - echo -e "\033[0;33m >> Syncing database & files assets from remote server... \033[0m"
       - robo sync:db --load-from scripts/robo/RoboFile.php
       - robo import:config --load-from scripts/robo/RoboFile.php
       - robo sync:files --load-from scripts/robo/RoboFile.php
@@ -53,6 +56,7 @@ tooling:
     service: appserver
     description: Sync database from remote origin
     cmd:
+      - echo -e "\033[0;33m >> Syncing database assets from remote server... \033[0m"
       - robo sync:db --load-from scripts/robo/RoboFile.php
       - robo import:config --load-from scripts/robo/RoboFile.php
       - drush uli
@@ -60,14 +64,14 @@ tooling:
     service: appserver
     description: Sync files from remote origin
     cmd:
+      - echo -e "\033[0;33m >> Syncing files assets from remote server... \033[0m"
       - robo sync:files --load-from scripts/robo/RoboFile.php
   validate:all:
     service: appserver
-    description: Validate all PHP standards on code.
+    description: Validating standards on code.
     cmd:
-      - echo -e "\033[1;32mValidating composer.json.... \033[0;37m"
+      - echo "\033[0;33m >> Validating standards on code.... \033[0m"
       - composer validate
       - composer normalize --dry-run
-      - echo -e "\033[1;32mRunning Codesniffer.... \033[0;37m"
       - phpcs --standard="Drupal,DrupalPractice" -n --extensions="php,module,install,theme" docroot/themes/custom docroot/modules/custom --ignore=docroot/themes/*/src/,docroot/themes/*/dist/,docroot/themes/*/Gulpfile.js,docroot/themes/*/node_modules/
       - echo -e "\033[1;32mValidation completed. Good to go!!!! \033[0;37m"

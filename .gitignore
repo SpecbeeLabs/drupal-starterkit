@@ -1,16 +1,82 @@
-# Ignore binaries.
-/bin
+# Ignore configuration files that may contain sensitive information.
+local.settings.php
+local.drush.yml
+local.site.yml
+local.services.yml
+tests/behat/local.yml
+*.local
 
-# Ignore non-custom parts of Drupal.
-/docroot/core
-/docroot/libraries
-/docroot/modules/contrib
-/docroot/profiles/contrib
-/docroot/themes/contrib
-/docroot/sites/default/files
+# Ignore drupal core.
+docroot/core
 
-# Ignore Composer-managed dependencies.
+# Ignore paths that contain user-generated content.
+docroot/sites/*/files
+/files-private
+docroot/sites/*/private
+
+# Ignore contrib modules. These should be created during build process.
+docroot/modules/contrib
+docroot/themes/contrib
+docroot/profiles/contrib
+docroot/libraries
+
+# Ignore custom theme build artifacts
+docroot/themes/custom/*/node_modules
+docroot/themes/custom/*/dist
+docroot/themes/custom/*/styleguide
+
+# OS X
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# User-specific stuff:
+.idea/
+
+#XHProf
+xhprof_*
+
+#Composer vendor
 vendor/
+vendor/.git
 
-# Ignore environment variables
-.env
+#Sass
+.sass-cache
+
+#Netbeans IDE
+nbproject
+nbproject/*
+
+#Exports
+*.gz
+*.sql
+*.zip
+
+# PHPStorm
+atlassian-ide-plugin.xml
+
+# VS Code
+.vscode
+
+#NPM
+npm-debug.log
+
+# Drush 9 Checksums
+drush/sites/.checksums

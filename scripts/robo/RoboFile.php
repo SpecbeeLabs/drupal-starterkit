@@ -26,21 +26,14 @@ class RoboFile extends Tasks {
    * Initializes the project repo and performs initial commit.
    */
   public function initRepo() {
+    $this->say('> init:repo');
     $collection = $this->collectionBuilder();
-
-    // Setup the Drush aliases.
     $collection->addTask($this->copyDefaultDrushAlias());
     $collection->addTask($this->setupDrushAlias());
-
-    // Setup lando.yml file.
     $collection->addTask($this->setupLando());
-
-    // Setup grumphp.yml file.
     $collection->addTask($this->setupGrumphp());
-
-    // Initialize git repo.
     $collection->addTask($this->setupGit());
-
+    
     return $collection->run();
   }
 
@@ -48,6 +41,7 @@ class RoboFile extends Tasks {
    * Initialize git and make an empty initial commit.
    */
   public function setupGit() {
+    $this->say('> setup:git');
     $config = $this->getConfig();
     $task = $this->taskGitStack()
       ->dir((getcwd()) . '/../..')
@@ -65,10 +59,12 @@ class RoboFile extends Tasks {
    * Copy the default.sites.yml to project.site.yml.
    */
   public function copyDefaultDrushAlias() {
+    $this->say('> copy:default-drush-alias');
     $config = $this->getConfig();
     $drushPath = $this->getDocroot() . '/drush/sites';
     $task = $this->taskFilesystemStack()
       ->rename($drushPath . "/default.site.yml", $drushPath . '/' . $config['project']['machine_name'] . '.site.yml', TRUE);
+    
     return $task;
   }
 
@@ -76,6 +72,7 @@ class RoboFile extends Tasks {
    * Setup the Drupal aliases.
    */
   public function setupDrushAlias() {
+    $this->say('> setup:drupal-alias');
     $config = $this->getConfig();
     $drushFile = $this->getDocroot() . '/drush/sites/' . $config['project']['machine_name'] . '.site.yml';
     $task = $this->taskReplaceInFile($drushFile)
@@ -89,6 +86,7 @@ class RoboFile extends Tasks {
    * Setup lando.yml for local environment.
    */
   public function setupLando() {
+    $this->say('> setup:lando');
     $config = $this->getConfig();
     $landoFile = $this->getDocroot() . '/.lando.yml';
     $task = $this->taskReplaceInFile($landoFile)
@@ -102,6 +100,7 @@ class RoboFile extends Tasks {
    * Setup Grumphp file.
    */
   public function setupGrumphp() {
+    $this->say('> setup:grumphp');
     $config = $this->getConfig();
     $file = $this->getDocroot() . '/grumphp.yml';
     $task = $this->taskReplaceInFile($file)
@@ -114,22 +113,23 @@ class RoboFile extends Tasks {
   /**
    * Setup Drupal site.
    */
-  public function setup() {
+  public function drupalInstall() {
+    $this->say('> drupal:install');
     $config = $this->getConfig();
     $task = $this->drush()
       ->args("site-install")
       ->arg('lightning')
       ->option('db-url', static::DB_URL, '=')
-      ->option('site-name', $config['project']['human_name'])
-      ->option('site-mail', $config['project']['mail'])
+      ->option('site-name', $config['project']['human_name'], '=')
+      ->option('site-mail', $config['project']['mail'], '=')
       ->option('account-name', $config['project']['human_name'] . " Admin", '=')
-      ->option('account-mail', $config['project']['mail']);
+      ->option('account-mail', $config['project']['mail'], '=');
     // Check if config directory exists.
     if (file_exists($this->getDocroot() . '/config/sync/core.extension.yml')) {
       $task->option('existing-config');
     }
-
     $result = $task->run();
+    
     return $result;
   }
 
@@ -137,6 +137,7 @@ class RoboFile extends Tasks {
    * Sync database from remote server.
    */
   public function syncDb() {
+    $this->say('> sync:db');
     $config = $this->getConfig();
     $remote_alias = '@' . $config['project']['machine_name'] . '.' . $config['sync']['remote'];
     $local_alias = '@self';
@@ -156,7 +157,6 @@ class RoboFile extends Tasks {
           ->args('sql-sanitize')
       );
     }
-
     $result = $collection->run();
 
     return $result;
@@ -166,6 +166,7 @@ class RoboFile extends Tasks {
    * Sync files from remote server.
    */
   public function syncFiles() {
+    $this->say('> sync:files');
     $config = $this->getConfig();
     $remote_alias = '@' . $config['project']['machine_name'] . '.' . $config['drush']['sync'];
     $local_alias = '@self';
@@ -173,7 +174,6 @@ class RoboFile extends Tasks {
       ->args('core-rsync')
       ->arg($remote_alias . ':%files')
       ->arg($local_alias . ':%files');
-
     $result = $task->run();
 
     return $result;
@@ -183,6 +183,7 @@ class RoboFile extends Tasks {
    * Import pending configurations.
    */
   public function importConfig() {
+    $this->say('> import:config');
     $task = $this->drush()
       ->args('config:import')
       ->run();

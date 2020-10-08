@@ -3,7 +3,7 @@ project:
   prefix: SB
   human_name: "Specbee"
   repo: git@bitbucket.org:specbee/project-repo.git
-  mail: info@example.com
+  mail: no-reply@specbee.com
 drush:
   dev:
     host: 
