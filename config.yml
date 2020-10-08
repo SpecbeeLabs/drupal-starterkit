@@ -3,14 +3,18 @@ project:
   prefix: SB
   human_name: "Specbee"
   repo: git@bitbucket.org:specbee/project-repo.git
+  mail: info@example.com
 drush:
   dev:
-    host: ec2-52-66-118-196.ap-south-1.compute.amazonaws.com
-    user: ubuntu
-    root: /var/www/html/great-southern-homes/dev/web
-    uri: https://dev-gsh.specbee.in/
+    host: 
+    user: 
+    root: 
+    uri: 
   stage:
-    host: ec2-52-66-118-196.ap-south-1.compute.amazonaws.com
-    user: ubuntu
-    root: /var/www/html/great-southern-homes/dev/web
-    uri: https://dev-gsh.specbee.in/
+    host: 
+    user: 
+    root: 
+    uri:
+sync:
+  remote: dev
+  sanitize: true

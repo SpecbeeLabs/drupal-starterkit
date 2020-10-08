@@ -1,26 +1,27 @@
-name: projectname
+name: ${PROJECT_NAME}
 recipe: drupal9
 config:
   webroot: docroot
   php: '7.3'
   xdebug: false
+  drush: "*"
 services:
   appserver:
     build:
       - '/bin/sh -c "echo ''\033[1;32mRunning Composer Install.... \033[0;37m'' && cd $LANDO_MOUNT && COMPOSER_MEMORY_LIMIT=-1 composer install -vvv "'
     environment:
       DRUSH_OPTIONS_ROOT: /app/docroot
-      DRUSH_OPTIONS_URI: projectname.lndo.site
+      DRUSH_OPTIONS_URI: ${PROJECT_NAME}.lndo.site
   mailhog:
     type: mailhog
     hogfrom:
       - appserver
     portforward: true
   node:
-    type: 'node:12'
+    type: 'node:14'
     globals:
       gulp-cli: latest
-      npm: 6.4.1
+      npm: latest
       yarn: latest
   database:
     type: 'mariadb:10.4'
@@ -33,9 +34,9 @@ services:
     portforward: true
     mem: 1025m
     environment:
-      - cluster.name=drupal
+      - cluster.name=${PROJECT_NAME}
   cache:
-    type: redis:4.0
+    type: 'redis:4.0'
     portforward: 6380
     persist: true
 tooling:
@@ -43,3 +44,40 @@ tooling:
     service: node
   redis-cli:
     service: cache
+  setup:
+    service: appserver
+    description: Install Drupal.
+    cmd:
+      - composer setup-local -vvv
+      - robo setup --load-from scripts/robo/RoboFile.php
+      - drush uli
+  sync:all:
+    service: appserver
+    description: Sync database and files from remote origin
+    cmd:
+      - robo sync:db --load-from scripts/robo/RoboFile.php
+      - robo import:config --load-from scripts/robo/RoboFile.php
+      - robo sync:files --load-from scripts/robo/RoboFile.php
+      - drush uli
+  sync:db:
+    service: appserver
+    description: Sync database from remote origin
+    cmd:
+      - robo sync:db --load-from scripts/robo/RoboFile.php
+      - robo import:config --load-from scripts/robo/RoboFile.php
+      - drush uli
+  sync:files:
+    service: appserver
+    description: Sync files from remote origin
+    cmd:
+      - robo sync:files --load-from scripts/robo/RoboFile.php
+  validate:all:
+    service: appserver
+    description: Validate all PHP standards on code.
+    cmd:
+      - echo -e "\033[1;32mValidating composer.json.... \033[0;37m"
+      - composer validate
+      - composer normalize --dry-run
+      - echo -e "\033[1;32mRunning Codesniffer.... \033[0;37m"
+      - phpcs --standard="Drupal,DrupalPractice" -n --extensions="php,module,install,theme" docroot/themes/custom docroot/modules/custom --ignore=docroot/themes/*/src/,docroot/themes/*/dist/,docroot/themes/*/Gulpfile.js,docroot/themes/*/node_modules/
+      - echo -e "\033[1;32mValidation completed. Good to go!!!! \033[0;37m"

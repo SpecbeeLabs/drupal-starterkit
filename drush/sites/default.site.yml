@@ -1,24 +1,25 @@
 dev:
-  host: 
-  user: 
-  root: 
-  uri: 
+  host: ${REMOTE_DEV_HOST}
+  user: ${REMOTE_DEV_USER}
+  root: ${REMOTE_DEV_ROOT}
+  uri: ${REMOTE_DEV_URI}
   paths:
-    -
-      files: sites/default/files
+    - files: sites/default/files
   command:
     sql:
       sync:
-        options: { no-dump: true }
+        options: 
+          no-dump: true
+
 stage:
-  host: 
-  user: 
-  root: 
-  uri: 
+  host: ${REMOTE_STAGE_HOST}
+  user: ${REMOTE_STAGE_USER}
+  root: ${REMOTE_STAGE_ROOT}
+  uri: ${REMOTE_STAGE_URI}
   paths:
-    -
-      files: sites/default/files
+    - files: sites/default/files
   command:
     sql:
       sync:
-        options: { no-dump: true }
+        options: 
+          no-dump: true
