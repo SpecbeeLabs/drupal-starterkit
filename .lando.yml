@@ -2,13 +2,14 @@ name: ${PROJECT_NAME}
 recipe: drupal9
 config:
   webroot: docroot
-  php: '7.3'
+  php: 7.3
   xdebug: false
-  drush: "*"
+  drush: '*'
 services:
   appserver:
     build:
-      - '/bin/sh -c "echo ''\033[1;32mRunning Composer Install.... \033[0;37m'' && cd $LANDO_MOUNT && COMPOSER_MEMORY_LIMIT=-1 composer install -vvv "'
+      - echo -e '\033[0;33m >> Setting up local environment... \033[0m'
+      - cd $LANDO_MOUNT && COMPOSER_MEMORY_LIMIT=-1 composer install -vvv
     environment:
       DRUSH_OPTIONS_ROOT: /app/docroot
       DRUSH_OPTIONS_URI: ${PROJECT_NAME}.lndo.site
@@ -18,13 +19,13 @@ services:
       - appserver
     portforward: true
   node:
-    type: 'node:14'
+    type: node:14
     globals:
       gulp-cli: latest
       npm: latest
       yarn: latest
   database:
-    type: 'mariadb:10.4'
+    type: mariadb:10.4
     creds:
       user: drupal
       password: drupal
@@ -32,13 +33,11 @@ services:
 tooling:
   yarn:
     service: node
-  redis-cli:
-    service: cache
   setup:
     service: appserver
     description: Install Drupal.
     cmd:
-      - echo -e "\033[0;33m >> Setting up local environment... \033[0m"
+      - echo -e '\033[0;33m >> Setting up local environment... \033[0m'
       - composer install -vvv
       - composer setup-local -vvv
       - robo drupal:install --load-from scripts/robo/RoboFile.php
@@ -47,7 +46,7 @@ tooling:
     service: appserver
     description: Sync database and files from remote origin
     cmd:
-      - echo -e "\033[0;33m >> Syncing database & files assets from remote server... \033[0m"
+      - echo -e '\033[0;33m >> Syncing database & files assets from remote server... \033[0m'
       - robo sync:db --load-from scripts/robo/RoboFile.php
       - robo import:config --load-from scripts/robo/RoboFile.php
       - robo sync:files --load-from scripts/robo/RoboFile.php
@@ -56,7 +55,7 @@ tooling:
     service: appserver
     description: Sync database from remote origin
     cmd:
-      - echo -e "\033[0;33m >> Syncing database assets from remote server... \033[0m"
+      - echo -e '\033[0;33m >> Syncing database assets from remote server... \033[0m'
       - robo sync:db --load-from scripts/robo/RoboFile.php
       - robo import:config --load-from scripts/robo/RoboFile.php
       - drush uli
@@ -64,14 +63,23 @@ tooling:
     service: appserver
     description: Sync files from remote origin
     cmd:
-      - echo -e "\033[0;33m >> Syncing files assets from remote server... \033[0m"
+      - echo -e '\033[0;33m >> Syncing files assets from remote server... \033[0m'
       - robo sync:files --load-from scripts/robo/RoboFile.php
   validate:all:
     service: appserver
     description: Validating standards on code.
     cmd:
-      - echo "\033[0;33m >> Validating standards on code.... \033[0m"
+      - echo '\033[0;33m >> Validating standards on code.... \033[0m'
       - composer validate
       - composer normalize --dry-run
-      - phpcs --standard="Drupal,DrupalPractice" -n --extensions="php,module,install,theme" docroot/themes/custom docroot/modules/custom --ignore=docroot/themes/*/src/,docroot/themes/*/dist/,docroot/themes/*/Gulpfile.js,docroot/themes/*/node_modules/
-      - echo -e "\033[1;32mValidation completed. Good to go!!!! \033[0;37m"
+      - phpcs --standard='Drupal,DrupalPractice' -n --extensions='php,module,install,theme' docroot/themes/custom docroot/modules/custom --ignore=docroot/themes/*/src/,docroot/themes/*/dist/,docroot/themes/*/Gulpfile.js,docroot/themes/*/node_modules/
+  recipe:init:search:
+    service: appserver
+    description: Add Elasticsearch support to the app
+    cmd:
+      - robo init:recipe-search --load-from scripts/robo/RoboFile.php
+  recipe:init:cache:
+    service: appserver
+    description: Add Redis cache support to the app
+    cmd:
+      - robo init:recipe-redis --load-from scripts/robo/RoboFile.php

@@ -6,15 +6,15 @@ project:
   mail: no-reply@specbee.com
 drush:
   dev:
-    host: 
-    user: 
-    root: 
-    uri: 
+    host: ""
+    user: ""
+    root: ""
+    uri: ""
   stage:
-    host: 
-    user: 
-    root: 
-    uri:
+    host: ""
+    user: ""
+    root: ""
+    uri: ""
 sync:
-  remote: dev
+  remote: "dev"
   sanitize: true

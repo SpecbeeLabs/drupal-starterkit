@@ -3,16 +3,16 @@
 // @codingStandardsIgnoreStart
 
 /**
- * @file
+ * Base tasks for project's console commands configuration for Robo task runner.
+ *
+ * @class RoboFile
+ * @codeCoverageIgnore
  */
 
 use DrupalFinder\DrupalFinder;
 use Robo\Tasks;
 use Symfony\Component\Yaml\Yaml;
 
-/**
- * This is project's console commands configuration for Robo task runner.
- */
 class RoboFile extends Tasks {
 
   /**
@@ -33,7 +33,7 @@ class RoboFile extends Tasks {
     $collection->addTask($this->setupLando());
     $collection->addTask($this->setupGrumphp());
     $collection->addTask($this->setupGit());
-    
+
     return $collection->run();
   }
 
@@ -52,7 +52,6 @@ class RoboFile extends Tasks {
       ->commit($config['project']['prefix'] . '-000: Created project from Specbee boilerplate.');
 
     return $task;
-
   }
 
   /**
@@ -64,7 +63,7 @@ class RoboFile extends Tasks {
     $drushPath = $this->getDocroot() . '/drush/sites';
     $task = $this->taskFilesystemStack()
       ->rename($drushPath . "/default.site.yml", $drushPath . '/' . $config['project']['machine_name'] . '.site.yml', TRUE);
-    
+
     return $task;
   }
 
@@ -129,7 +128,7 @@ class RoboFile extends Tasks {
       $task->option('existing-config');
     }
     $result = $task->run();
-    
+
     return $result;
   }
 
@@ -189,6 +188,95 @@ class RoboFile extends Tasks {
       ->run();
 
     return $task;
+  }
+
+  /**
+   * Setup elastic search.
+   */
+  public function initRecipeSearch() {
+    $config = $this->getConfig();
+    $this->say('> init:recipe-search');
+    $landoFileConfig = Yaml::parse(file_get_contents($this->getDocroot() . '/.lando.yml', 128));
+    $this->say('> Checking if there is search service is setup.');
+    if (!array_key_exists('search', $landoFileConfig['services'])) {
+      $landoFileConfig['services']['search'] = [
+        'type' => 'elasticsearch:7',
+        'portforward' => TRUE,
+        'mem' => '1025m',
+        'environment' => [
+          'cluster.name=' . $config['project']['machine_name'],
+        ],
+      ];
+      file_put_contents($this->getDocroot() . '/.lando.yml', Yaml::dump($landoFileConfig, 5, 2));
+      $this->say('> Lando configurations are updated with search service.\n');
+
+      // Get the elasticsearch_connector module from Github,
+      // since the Drupal module is not Drupal 9 compatible yet.
+      $this->say('> Adding the Elasticsearch connector package via composer. \n');
+      chdir('../..');
+      $this->_exec(
+        "composer config repositories.elasticsearch_connector '{\"type\": \"package\", \"package\": {
+          \"name\": \"malabya/elasticsearch_connector\",
+          \"type\": \"drupal-module\",
+          \"require\": {
+              \"nodespark/des-connector\": \"7.x-dev\",
+              \"makinacorpus/php-lucene\": \"^1.0.2\"
+          },
+          \"version\": \"7.0-dev\",
+          \"source\": {
+              \"type\": \"git\",
+              \"url\": \"https://github.com/malabya/elasticsearch_connector.git\",
+              \"reference\": \"8.x-7.x\"
+          }
+      }}' --no-interaction --ansi --verbose"
+      );
+
+      $this->taskComposerRequire()->dependency('malabya/elasticsearch_connector', '7.0-dev')->ansi()->run();
+    }
+    else {
+      $this->say('> Search service exists in the lando configuration. Skipping...');
+    }
+  }
+
+  /**
+   * Setup redis.
+   */
+  public function initRecipeRedis() {
+    $this->say('> init:recipe-redis');
+    $landoFileConfig = Yaml::parse(file_get_contents($this->getDocroot() . '/.lando.yml', 128));
+    $this->say('> Checking if there is cache service is setup.');
+    if (!array_key_exists('cache', $landoFileConfig['services'])) {
+      $landoFileConfig['services']['cache'] = [
+        'type' => 'redis:4.0',
+        'portforward' => TRUE,
+        'persist' => TRUE,
+      ];
+      $landoFileConfig['tooling']['redis-cli'] = [
+        'service' => 'cache',
+      ];
+
+      file_put_contents($this->getDocroot() . '/.lando.yml', Yaml::dump($landoFileConfig, 5, 2));
+      $this->say('> Lando configurations are updated with cache service.\n');
+
+      $this->say('> Adding the Drupal Redis module via composer. \n');
+      chdir('../..');
+      $this->taskComposerRequire()->dependency('drupal/redis', '^1.4')->ansi()->run();
+      $this->taskWriteToFile($this->getDocroot() . '/docroot/sites/default/settings.local.php')
+        ->append()
+        ->line('# Redis Configuration.')
+        ->line('$conf[\'redis_client_host\'] = \'cache\';')
+        ->line('$settings[\'container_yamls\'][] = \'modules/redis/example.services.yml\';')
+        ->line('$conf[\'redis_client_interface\'] = \'PhpRedis\';')
+        ->line('$settings[\'redis.connection\'][\'host\'] = \'cache\';')
+        ->line('$settings[\'redis.connection\'][\'port\'] = \'6379\';')
+        ->line('$settings[\'cache\'][\'default\'] = \'cache.backend.redis\';')
+        ->line('$settings[\'cache_prefix\'][\'default\'] = \'specbee-redis\';')
+        ->line('$settings[\'cache\'][\'bins\'][\'form\'] = \'cache.backend.database\';')
+        ->run();
+    }
+    else {
+      $this->say('> Cache service exists in the lando configuration. Skipping...');
+    }
   }
 
   /**
