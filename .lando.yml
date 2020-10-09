@@ -1,4 +1,4 @@
-name: ${PROJECT_NAME}
+name: #PROJECT_NAME
 recipe: drupal9
 config:
   webroot: docroot
@@ -12,7 +12,27 @@ services:
       - cd $LANDO_MOUNT && COMPOSER_MEMORY_LIMIT=-1 composer install -vvv
     environment:
       DRUSH_OPTIONS_ROOT: /app/docroot
-      DRUSH_OPTIONS_URI: ${PROJECT_NAME}.lndo.site
+      DRUSH_OPTIONS_URI: #PROJECT_NAME.lndo.site
+      MINK_DRIVER_ARGS: '["chrome", null, "http://chromedriver:4444/wd/hub"]'
+      MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", null, "http://chromedriver:4444/wd/hub"]'
+      MINK_DRIVER_CLASS: 'Drupal\FunctionalJavascriptTests\DrupalSelenium2Driver'
+      SIMPLETEST_DB: "mysql://drupal:drupal@database/drupal"
+      SIMPLETEST_BASE_URL: "https://#PROJECT_NAME.lndo.site"
+      SYMFONY_DEPRECATIONS_HELPER: 'disabled'
+      PHP_IDE_CONFIG: "serverName=appserver"
+      BEHAT_PARAMS: '{"extensions" : {"Behat\\MinkExtension" : {"base_url" : "http://#PROJECT_NAME.lndo.site"}, "Drupal\\DrupalExtension" : {"drush" :   {  "root":  "/app/docroot" }}}}'
+  chromedriver:
+    type: compose
+    services:
+      image: robcherry/docker-chromedriver:latest
+      expose:
+        - "4444"
+      environment:
+        CHROMEDRIVER_WHITELISTED_IPS: ""
+        CHROMEDRIVER_URL_BASE: "/wd/hub"
+      security_opt:
+        - seccomp:unconfined
+      command: ["/usr/local/bin/supervisord", "-c", "/etc/supervisord.conf"]
   mailhog:
     type: mailhog
     hogfrom:
@@ -31,6 +51,14 @@ services:
       password: drupal
       database: drupal
 tooling:
+  chromedriver:
+    service: chromedriver
+    description: "Run chromedriver commands."
+  behat:
+    service: appserver
+    description: Run behat tests locally.
+    cmd:
+      - /app/vendor/bin/behat  
   yarn:
     service: node
   setup:

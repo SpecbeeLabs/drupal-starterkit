@@ -1,0 +1,38 @@
+default:
+  autoload:
+    "": '%paths.base%/tests/behat/features/bootstrap'
+  suites:
+    default:
+      failure_path: '%paths.base%/tests/behat/failures'
+      paths:
+        - '%paths.base%/tests/behat/features'
+      contexts:
+        - FeatureContext
+        - Drupal\DrupalExtension\Context\DrupalContext
+        - Drupal\DrupalExtension\Context\MinkContext
+        - Drupal\DrupalExtension\Context\MessageContext
+        - Drupal\DrupalExtension\Context\DrushContext
+  extensions:
+    Drupal\MinkExtension:
+      base_url: https://sdnn.lndo.site/
+      files_path: '%paths.base%/tests/behat/files/'
+      browser_name: chrome
+      sessions:
+        default:
+          goutte:
+            guzzle_parameters:
+              verify: false
+        javascript:
+          selenium2:
+            wd_host: http://chromedriver:4444/wd/hub
+    Bex\Behat\ScreenshotExtension:
+      screenshot_taking_mode: failed_steps
+      image_drivers:
+        local:
+          screenshot_directory: "%paths.base%/tests/behat/failed_screenshots"
+          clear_screenshot_directory: true
+    Drupal\DrupalExtension:
+      blackbox: ~
+      api_driver: 'drupal'
+      drupal:
+        drupal_root: '/app/docroot'
