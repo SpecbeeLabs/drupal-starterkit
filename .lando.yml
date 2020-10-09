@@ -42,6 +42,13 @@ tooling:
       - composer setup-local -vvv
       - robo drupal:install --load-from scripts/robo/RoboFile.php
       - drush uli
+  drupal:update:
+    service: appserver
+    description: Update Drupal database & configurations
+    cmd:
+      - echo -e '\033[0;33m >> Updating Drupal database & configurations... \033[0m'
+      - composer install -vvv
+      - robo drupal:update --load-from scripts/robo/RoboFile.php
   sync:all:
     service: appserver
     description: Sync database and files from remote origin

@@ -1,7 +1,5 @@
 <?php
 
-// @codingStandardsIgnoreStart
-
 /**
  * Base tasks for project's console commands configuration for Robo task runner.
  *
@@ -137,6 +135,38 @@ class RoboFile extends Tasks {
   }
 
   /**
+   * Update Drupal & sync pending configurations.
+   *
+   * @command drupal:update
+   */
+  public function drupalUpdate() {
+    $this->say('> drupal:update');
+    $this->drush()->arg('cache-rebuild');
+    $this->updateDatabase();
+    $this->importConfig();
+  }
+
+  /**
+   * Clear the cache.
+   *
+   * @command drupal:udpate:db
+   */
+  public function updateDatabase() {
+    $this->say('> drupal:update:db');
+    $result = $this->drush()
+      ->arg('updb')
+      ->arg('--no-interaction')
+      ->arg('--ansi')
+      ->run();
+    if (!$result->wasSuccessful()) {
+      $this->say($result->getMessage());
+      throw new Exception("Failed to execute database updates!");
+    }
+
+    return $result;
+  }
+
+  /**
    * Sync database from remote server.
    */
   public function syncDb() {
@@ -187,9 +217,26 @@ class RoboFile extends Tasks {
    */
   public function importConfig() {
     $this->say('> import:config');
-    $task = $this->drush()
-      ->args('config:import')
+
+    $this->drush()
+      ->arg('config:set')
+      ->arg('system.site')
+      ->arg('uuid')
+      ->arg($this->getExportedSiteUuid())
+      ->arg('--no-interaction')
+      ->arg('--ansi')
       ->run();
+
+    $task = $this->drush()
+      ->arg('config:import')
+      ->arg('--no-interaction')
+      ->arg('--ansi')
+      ->run();
+
+    if (!$task->wasSuccessful()) {
+      $this->say($task->getMessage());
+      throw new Exception("Failed to import configuration updates!");
+    }
 
     return $task;
   }
@@ -392,6 +439,27 @@ class RoboFile extends Tasks {
     $root = $drupalFinder->getComposerRoot();
     $config = Yaml::parse(file_get_contents($root . "/config.yml"));
     return $config;
+  }
+
+  /**
+   * Returns the site UUID stored in exported configuration.
+   *
+   * @param string $cm_core_key
+   *   Cm core key.
+   *
+   * @return null
+   *   Mixed.
+   */
+  protected function getExportedSiteUuid() {
+    $site_config_file = $this->getDocroot() . '/config/sync/system.site.yml';
+    if (file_exists($site_config_file)) {
+      $site_config = Yaml::parseFile($site_config_file);
+      $site_uuid = $site_config['uuid'];
+
+      return $site_uuid;
+    }
+
+    return NULL;
   }
 
 }
