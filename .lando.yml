@@ -7,9 +7,6 @@ config:
   drush: '*'
 services:
   appserver:
-    build:
-      - echo -e '\033[0;33m >> Setting up local environment... \033[0m'
-      - cd $LANDO_MOUNT && COMPOSER_MEMORY_LIMIT=-1 composer install -vvv
     environment:
       DRUSH_OPTIONS_ROOT: /app/docroot
       DRUSH_OPTIONS_URI: #PROJECT_NAME.lndo.site

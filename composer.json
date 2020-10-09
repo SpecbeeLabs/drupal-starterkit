@@ -66,6 +66,11 @@
         ],
         "patchLevel": {
             "drupal/core": "-p2"
+        },
+        "patches": {
+            "drupal/lightning_workflow": {
+                "drupal_get_user_timezone in Lightning Scheduler Fatals in D9": "patches/scheduler_fatall_d9_behat.patch"
+            }
         }
     },
     "autoload": {
