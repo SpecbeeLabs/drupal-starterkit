@@ -1,5 +1,7 @@
 <?php
 
+// @codingStandardsIgnoreStart
+
 /**
  * Base tasks for project's console commands configuration for Robo task runner.
  *
@@ -12,9 +14,6 @@ use Robo\Tasks;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 
-/**
- *
- */
 class RoboFile extends Tasks {
 
   /**
