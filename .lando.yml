@@ -2,7 +2,7 @@ name: #PROJECT_NAME
 recipe: drupal9
 config:
   webroot: docroot
-  php: 7.3
+  php: 7.4
   xdebug: false
   drush: '*'
 services:
@@ -55,7 +55,7 @@ tooling:
     service: appserver
     description: Run behat tests locally.
     cmd:
-      - /app/vendor/bin/behat  
+      - /app/vendor/bin/behat
   yarn:
     service: node
   setup:
