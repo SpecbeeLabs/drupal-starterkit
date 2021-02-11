@@ -62,7 +62,7 @@ tooling:
     service: appserver
     description: Install Drupal.
     cmd:
-      - echo -e '\033[0;33m >> Setting up local environment... \033[0m'
+      - echo '\033[0;33m>> Setting up local environment... \033[0m'
       - composer install -vvv
       - composer setup-local -vvv
       - robo drupal:install --load-from scripts/robo/RoboFile.php
@@ -71,14 +71,14 @@ tooling:
     service: appserver
     description: Update Drupal database & configurations
     cmd:
-      - echo -e '\033[0;33m >> Updating Drupal database & configurations... \033[0m'
+      - echo '\033[0;33m>> Updating Drupal database & configurations... \033[0m'
       - composer install -vvv
       - robo drupal:update --load-from scripts/robo/RoboFile.php
   sync:all:
     service: appserver
     description: Sync database and files from remote origin
     cmd:
-      - echo -e '\033[0;33m >> Syncing database & files assets from remote server... \033[0m'
+      - echo '\033[0;33m>> Syncing database & files assets from remote server... \033[0m'
       - robo sync:db --load-from scripts/robo/RoboFile.php
       - robo import:config --load-from scripts/robo/RoboFile.php
       - robo sync:files --load-from scripts/robo/RoboFile.php
@@ -87,7 +87,7 @@ tooling:
     service: appserver
     description: Sync database from remote origin
     cmd:
-      - echo -e '\033[0;33m >> Syncing database assets from remote server... \033[0m'
+      - echo '\033[0;33m>> Syncing database assets from remote server... \033[0m'
       - robo sync:db --load-from scripts/robo/RoboFile.php
       - robo import:config --load-from scripts/robo/RoboFile.php
       - drush uli
@@ -95,13 +95,13 @@ tooling:
     service: appserver
     description: Sync files from remote origin
     cmd:
-      - echo -e '\033[0;33m >> Syncing files assets from remote server... \033[0m'
+      - echo '\033[0;33m>> Syncing files assets from remote server... \033[0m'
       - robo sync:files --load-from scripts/robo/RoboFile.php
   validate:all:
     service: appserver
     description: Validating standards on code.
     cmd:
-      - echo '\033[0;33m >> Validating standards on code.... \033[0m'
+      - echo '\033[0;33m>> Validating standards on code.... \033[0m'
       - robo validate:composer --load-from scripts/robo/RoboFile.php
       - robo validate:phpcs:sniff --load-from scripts/robo/RoboFile.php
       - robo validate:frontend:src --load-from scripts/robo/RoboFile.php

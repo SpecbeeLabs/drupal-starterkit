@@ -27,7 +27,7 @@ class RoboFile extends Tasks {
    * Initializes the project repo and performs initial commit.
    */
   public function initRepo() {
-    $this->say('> init:repo');
+    $this->say('init:repo');
     $collection = $this->collectionBuilder();
     $collection->addTask($this->copyDefaultDrushAlias());
     $collection->addTask($this->setupDrushAlias());
@@ -42,7 +42,7 @@ class RoboFile extends Tasks {
    * Initialize git and make an empty initial commit.
    */
   public function setupGit() {
-    $this->say('> setup:git');
+    $this->say('setup:git');
     $config = $this->getConfig();
     $task = $this->taskGitStack()
       ->dir((getcwd()) . '/../..')
@@ -59,22 +59,44 @@ class RoboFile extends Tasks {
    * Copy the default.sites.yml to project.site.yml.
    */
   public function copyDefaultDrushAlias() {
-    $this->say('> copy:default-drush-alias');
+    $this->say('copy:default-drush-alias');
     $config = $this->getConfig();
     $drushPath = $this->getDocroot() . '/drush/sites';
-    $task = $this->taskFilesystemStack()
-      ->rename($drushPath . "/default.site.yml", $drushPath . '/' . $config['project']['machine_name'] . '.site.yml', TRUE);
+    $aliasPath = $drushPath . '/' . $config['project']['machine_name'] . '.site.yml';
+
+    // Skip if alias file is already generated.
+    if (!file_exists($aliasPath)) {
+      $task = $this->taskFilesystemStack()
+        ->rename($drushPath . "/default.site.yml", $aliasPath, FALSE);
+    }
+    else {
+      $this->say("Drush alias file exists. Skipping");
+      $task = $this->taskFilesystemStack()
+        ->rename($aliasPath, $aliasPath, TRUE);
+    }
 
     return $task;
+
   }
 
   /**
    * Setup the Drupal aliases.
    */
   public function setupDrushAlias() {
-    $this->say('> setup:drupal-alias');
+    $this->say('setup:drupal-alias');
     $config = $this->getConfig();
     $drushFile = $this->getDocroot() . '/drush/sites/' . $config['project']['machine_name'] . '.site.yml';
+    if (empty($config['drush']['dev']['host']) ||
+    empty($config['drush']['dev']['user']) ||
+    empty($config['drush']['dev']['root']) ||
+    empty($config['drush']['dev']['uri']) ||
+    empty($config['drush']['stage']['host']) ||
+    empty($config['drush']['stage']['user']) ||
+    empty($config['drush']['stage']['root']) ||
+    empty($config['drush']['stage']['uri'])) {
+      echo 'Drush aliases were not properly configured. Please configure the information about remote server and run "robo setup:drush-alias to setup the Drush aliases."';
+      echo "\n";
+    }
     $task = $this->taskReplaceInFile($drushFile)
       ->from(['#REMOTE_DEV_HOST', '#REMOTE_DEV_USER', '#REMOTE_DEV_ROOT', '#REMOTE_DEV_URI', '#REMOTE_STAGE_HOST', '#REMOTE_STAGE_USER', '#REMOTE_STAGE_ROOT', '#REMOTE_STAGE_URI'])
       ->to([$config['drush']['dev']['host'], $config['drush']['dev']['user'], $config['drush']['dev']['root'], $config['drush']['dev']['uri'], $config['drush']['stage']['host'], $config['drush']['stage']['user'], $config['drush']['stage']['root'], $config['drush']['stage']['uri']]);
@@ -86,7 +108,7 @@ class RoboFile extends Tasks {
    * Setup lando.yml for local environment.
    */
   public function setupLando() {
-    $this->say('> setup:lando');
+    $this->say('setup:lando');
     $config = $this->getConfig();
     $landoFile = $this->getDocroot() . '/.lando.yml';
     $task = $this->taskReplaceInFile($landoFile)
@@ -100,7 +122,7 @@ class RoboFile extends Tasks {
    * Setup Grumphp file.
    */
   public function setupGrumphp() {
-    $this->say('> setup:grumphp');
+    $this->say('setup:grumphp');
     $config = $this->getConfig();
     $file = $this->getDocroot() . '/grumphp.yml';
     $task = $this->taskReplaceInFile($file)
@@ -114,7 +136,7 @@ class RoboFile extends Tasks {
    * Setup Drupal site.
    */
   public function drupalInstall() {
-    $this->say('> drupal:install');
+    $this->say('drupal:install');
     $config = $this->getConfig();
     $task = $this->drush()
       ->args("site-install")
@@ -139,7 +161,7 @@ class RoboFile extends Tasks {
    * @command drupal:update
    */
   public function drupalUpdate() {
-    $this->say('> drupal:update');
+    $this->say('drupal:update');
     $this->drush()->arg('cache-rebuild');
     $this->updateDatabase();
     $this->importConfig();
@@ -151,7 +173,7 @@ class RoboFile extends Tasks {
    * @command drupal:udpate:db
    */
   public function updateDatabase() {
-    $this->say('> drupal:update:db');
+    $this->say('drupal:update:db');
     $result = $this->drush()
       ->arg('updb')
       ->arg('--no-interaction')
@@ -169,7 +191,7 @@ class RoboFile extends Tasks {
    * Sync database from remote server.
    */
   public function syncDb() {
-    $this->say('> sync:db');
+    $this->say('sync:db');
     $config = $this->getConfig();
     $remote_alias = '@' . $config['project']['machine_name'] . '.' . $config['sync']['remote'];
     $local_alias = '@self';
@@ -198,7 +220,7 @@ class RoboFile extends Tasks {
    * Sync files from remote server.
    */
   public function syncFiles() {
-    $this->say('> sync:files');
+    $this->say('sync:files');
     $config = $this->getConfig();
     $remote_alias = '@' . $config['project']['machine_name'] . '.' . $config['drush']['sync'];
     $local_alias = '@self';
@@ -215,7 +237,7 @@ class RoboFile extends Tasks {
    * Import pending configurations.
    */
   public function importConfig() {
-    $this->say('> import:config');
+    $this->say('import:config');
 
     $this->drush()
       ->arg('config:set')
@@ -247,7 +269,7 @@ class RoboFile extends Tasks {
    */
   public function initServiceSearch() {
     $config = $this->getConfig();
-    $this->say('> init:recipe-search');
+    $this->say('init:recipe-search');
     $landoFileConfig = Yaml::parse(file_get_contents($this->getDocroot() . '/.lando.yml', 128));
     $this->say('> Checking if there is search service is setup.');
     if (!array_key_exists('search', $landoFileConfig['services'])) {
@@ -266,24 +288,7 @@ class RoboFile extends Tasks {
       // since the Drupal module is not Drupal 9 compatible yet.
       $this->say('> Adding the Elasticsearch connector package via composer. \n');
       chdir('../..');
-      $this->_exec(
-        "composer config repositories.elasticsearch_connector '{\"type\": \"package\", \"package\": {
-          \"name\": \"malabya/elasticsearch_connector\",
-          \"type\": \"drupal-module\",
-          \"require\": {
-              \"nodespark/des-connector\": \"7.x-dev\",
-              \"makinacorpus/php-lucene\": \"^1.0.2\"
-          },
-          \"version\": \"7.0-dev\",
-          \"source\": {
-              \"type\": \"git\",
-              \"url\": \"https://github.com/malabya/elasticsearch_connector.git\",
-              \"reference\": \"8.x-7.x\"
-          }
-      }}' --no-interaction --ansi --verbose"
-      );
-
-      $this->taskComposerRequire()->dependency('malabya/elasticsearch_connector', '7.0-dev')->ansi()->run();
+      $this->taskComposerRequire()->dependency('drupal/elasticsearch_connector', '^7.0@alpha')->ansi()->run();
     }
     else {
       $this->say('> Search service exists in the lando configuration. Skipping...');
@@ -296,7 +301,7 @@ class RoboFile extends Tasks {
    * @command init:service:cache
    */
   public function initServiceCache() {
-    $this->say('> init:recipe-redis');
+    $this->say('init:recipe-redis');
     $landoFileConfig = Yaml::parse(file_get_contents($this->getDocroot() . '/.lando.yml', 128));
     $this->say('> Checking if there is cache service is setup.');
     if (!array_key_exists('cache', $landoFileConfig['services'])) {
