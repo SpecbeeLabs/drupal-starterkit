@@ -10,6 +10,7 @@
  */
 
 use DrupalFinder\DrupalFinder;
+use Robo\Robo;
 use Robo\Tasks;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
@@ -23,6 +24,9 @@ class RoboFile extends Tasks {
    */
   const DB_URL = 'mysql://drupal:drupal@database/drupal';
 
+
+  // +++++++++++++++++++++++++ Repository initialization ++++++++++++++++++++++++++++++++++ //
+
   /**
    * Initializes the project repo and performs initial commit.
    */
@@ -30,29 +34,12 @@ class RoboFile extends Tasks {
     $this->say('init:repo');
     $collection = $this->collectionBuilder();
     $collection->addTask($this->copyDefaultDrushAlias());
-    $collection->addTask($this->setupDrushAlias());
-    $collection->addTask($this->setupLando());
-    $collection->addTask($this->setupGrumphp());
-    $collection->addTask($this->setupGit());
+    $collection->addTask($this->initDrushAlias());
+    $collection->addTask($this->initLando());
+    $collection->addTask($this->initGrumphp());
+    $collection->addTask($this->initGit());
 
     return $collection->run();
-  }
-
-  /**
-   * Initialize git and make an empty initial commit.
-   */
-  public function setupGit() {
-    $this->say('setup:git');
-    $config = $this->getConfig();
-    $task = $this->taskGitStack()
-      ->dir((getcwd()) . '/../..')
-      ->stopOnFail()
-      ->exec('git init')
-      ->exec('git remote add origin ' . $config['project']['repo'])
-      ->add('-A')
-      ->commit($config['project']['prefix'] . '-000: Created project from Specbee boilerplate.');
-
-    return $task;
   }
 
   /**
@@ -60,9 +47,9 @@ class RoboFile extends Tasks {
    */
   public function copyDefaultDrushAlias() {
     $this->say('copy:default-drush-alias');
-    $config = $this->getConfig();
+    $config = Robo::config();
     $drushPath = $this->getDocroot() . '/drush/sites';
-    $aliasPath = $drushPath . '/' . $config['project']['machine_name'] . '.site.yml';
+    $aliasPath = $drushPath . '/' . $config->get('project.machine_name') . '.site.yml';
 
     // Skip if alias file is already generated.
     if (!file_exists($aliasPath)) {
@@ -76,30 +63,29 @@ class RoboFile extends Tasks {
     }
 
     return $task;
-
   }
 
   /**
    * Setup the Drupal aliases.
    */
-  public function setupDrushAlias() {
+  public function initDrushAlias() {
     $this->say('setup:drupal-alias');
-    $config = $this->getConfig();
-    $drushFile = $this->getDocroot() . '/drush/sites/' . $config['project']['machine_name'] . '.site.yml';
-    if (empty($config['drush']['dev']['host']) ||
-    empty($config['drush']['dev']['user']) ||
-    empty($config['drush']['dev']['root']) ||
-    empty($config['drush']['dev']['uri']) ||
-    empty($config['drush']['stage']['host']) ||
-    empty($config['drush']['stage']['user']) ||
-    empty($config['drush']['stage']['root']) ||
-    empty($config['drush']['stage']['uri'])) {
+    $config = Robo::config();
+    $drushFile = $this->getDocroot() . '/drush/sites/' . $config->get('project.machine_name') . '.site.yml';
+    if (empty($config->get('drush.dev.host')) ||
+    empty($config->get('drush.dev.user')) ||
+    empty($config->get('drush.dev.root')) ||
+    empty($config->get('drush.dev.uri')) ||
+    empty($config->get('drush.stage.host')) ||
+    empty($config->get('drush.stage.user')) ||
+    empty($config->get('drush.stage.root')) ||
+    empty($config->get('drush.stage.uri'))) {
       echo 'Drush aliases were not properly configured. Please configure the information about remote server and run "robo setup:drush-alias to setup the Drush aliases."';
       echo "\n";
     }
     $task = $this->taskReplaceInFile($drushFile)
       ->from(['#REMOTE_DEV_HOST', '#REMOTE_DEV_USER', '#REMOTE_DEV_ROOT', '#REMOTE_DEV_URI', '#REMOTE_STAGE_HOST', '#REMOTE_STAGE_USER', '#REMOTE_STAGE_ROOT', '#REMOTE_STAGE_URI'])
-      ->to([$config['drush']['dev']['host'], $config['drush']['dev']['user'], $config['drush']['dev']['root'], $config['drush']['dev']['uri'], $config['drush']['stage']['host'], $config['drush']['stage']['user'], $config['drush']['stage']['root'], $config['drush']['stage']['uri']]);
+      ->to([$config->get('drush.dev.host'), $config->get('drush.dev.user'), $config->get('drush.dev.root'), $config->get('drush.dev.uri'), $config->get('drush.stage.host'), $config->get('drush.stage.user'), $config->get('drush.stage.root'), $config->get('drush.stage.uri')]);
 
     return $task;
   }
@@ -107,13 +93,13 @@ class RoboFile extends Tasks {
   /**
    * Setup lando.yml for local environment.
    */
-  public function setupLando() {
+  public function initLando() {
     $this->say('setup:lando');
-    $config = $this->getConfig();
+    $config = Robo::config();
     $landoFile = $this->getDocroot() . '/.lando.yml';
     $task = $this->taskReplaceInFile($landoFile)
       ->from('#PROJECT_NAME')
-      ->to($config['project']['machine_name']);
+      ->to($config->get('project.machine_name'));
 
     return $task;
   }
@@ -121,15 +107,49 @@ class RoboFile extends Tasks {
   /**
    * Setup Grumphp file.
    */
-  public function setupGrumphp() {
+  public function initGrumphp() {
     $this->say('setup:grumphp');
-    $config = $this->getConfig();
+    $config = Robo::config();
     $file = $this->getDocroot() . '/grumphp.yml';
     $task = $this->taskReplaceInFile($file)
       ->from('${PROJECT_PREFIX}')
-      ->to($config['project']['prefix']);
+      ->to($config->get('project.prefix'));
 
     return $task;
+  }
+
+  /**
+   * Initialize git and make an empty initial commit.
+   */
+  public function initGit() {
+    $this->say('setup:git');
+    $config = Robo::config();
+    $task = $this->taskGitStack()
+      ->dir((getcwd()) . '/../..')
+      ->stopOnFail()
+      ->exec('git init')
+      ->exec('git remote add origin ' . $config->get('project.repo'))
+      ->add('-A')
+      ->commit($config->get('project.prefix') . '-000: Created project from Specbee boilerplate.');
+
+    return $task;
+  }
+
+  // +++++++++++++++++++++++++++++ Drupal Commands ++++++++++++++++++++++++++++++++++++++++ //
+
+  /**
+   * Setup a fresh Drupal site from existing config if present.
+   */
+  public function setup() {
+    $this->say('Setting up local environment...');
+    $config = Robo::config();
+    $collection = $this->collectionBuilder();
+    $collection->addTask($this->installDependencies());
+    // $collection->addTask($this->drupalInstall());
+    if (is_dir($this->getDocroot() . '/docroot/themes/custom/' . $config->get('project.machine_name') . '_theme')) {
+      $collection->addTaskList($this->buildFrontendReqs());
+    }
+    return $collection->run();
   }
 
   /**
@@ -137,22 +157,21 @@ class RoboFile extends Tasks {
    */
   public function drupalInstall() {
     $this->say('drupal:install');
-    $config = $this->getConfig();
+    $config = Robo::config();
     $task = $this->drush()
       ->args("site-install")
       ->arg('lightning')
       ->option('db-url', static::DB_URL, '=')
-      ->option('site-name', $config['project']['human_name'], '=')
-      ->option('site-mail', $config['project']['mail'], '=')
-      ->option('account-name', $config['project']['human_name'] . " Admin", '=')
-      ->option('account-mail', $config['project']['mail'], '=');
+      ->option('site-name', $config->get('project.human_name'), '=')
+      ->option('site-mail', $config->get('project.mail'), '=')
+      ->option('account-name', 'admin')
+      ->option('account-mail', $config->get('project.mail'), '=');
     // Check if config directory exists.
     if (file_exists($this->getDocroot() . '/config/sync/core.extension.yml')) {
       $task->option('existing-config');
     }
-    $result = $task->run();
 
-    return $result;
+    return $task;
   }
 
   /**
@@ -192,8 +211,8 @@ class RoboFile extends Tasks {
    */
   public function syncDb() {
     $this->say('sync:db');
-    $config = $this->getConfig();
-    $remote_alias = '@' . $config['project']['machine_name'] . '.' . $config['sync']['remote'];
+    $config = Robo::config();
+    $remote_alias = '@' . $config->get('project.machine_name') . '.' . $config->get('sync.remote');
     $local_alias = '@self';
     $collection = $this->collectionBuilder();
     $collection->addTask(
@@ -205,7 +224,7 @@ class RoboFile extends Tasks {
         ->option('structure-tables-key', 'lightweight')
         ->option('create-db')
     );
-    if ($config['sync']['sanitize'] === TRUE) {
+    if ($config->get('sync.sanitize') === TRUE) {
       $collection->addTask(
         $this->drush()
           ->args('sql-sanitize')
@@ -221,8 +240,8 @@ class RoboFile extends Tasks {
    */
   public function syncFiles() {
     $this->say('sync:files');
-    $config = $this->getConfig();
-    $remote_alias = '@' . $config['project']['machine_name'] . '.' . $config['drush']['sync'];
+    $config = Robo::config();
+    $remote_alias = '@' . $config->get('project.machine_name') . '.' . $config->get('sync.remote');
     $local_alias = '@self';
     $task = $this->drush()
       ->args('core-rsync')
@@ -263,12 +282,30 @@ class RoboFile extends Tasks {
   }
 
   /**
+   * Build theme dependencies.
+   *
+   * @return \Robo\Task\Base\Exec[]
+   */
+  protected function buildFrontendReqs() {
+    $task = [];
+    $config = Robo::config();
+    $task[] = $this->taskExecStack()
+      ->dir($this->getDocroot() . '/docroot/themes/custom/' . $config->get('project.machine_name') . '_theme')
+      ->exec('yarn install')
+      ->exec('yarn build');
+
+    return $task;
+  }
+
+  // ++++++++++++++++++++++++++++ Service initialization +++++++++++++++++++++++++++++++++++//
+
+  /**
    * Setup elastic search.
    *
    * @command init:service:search
    */
   public function initServiceSearch() {
-    $config = $this->getConfig();
+    $config = Robo::config();
     $this->say('init:recipe-search');
     $landoFileConfig = Yaml::parse(file_get_contents($this->getDocroot() . '/.lando.yml', 128));
     $this->say('> Checking if there is search service is setup.');
@@ -278,7 +315,7 @@ class RoboFile extends Tasks {
         'portforward' => TRUE,
         'mem' => '1025m',
         'environment' => [
-          'cluster.name=' . $config['project']['machine_name'],
+          'cluster.name=' . $config->get('project.machine_name'),
         ],
       ];
       file_put_contents($this->getDocroot() . '/.lando.yml', Yaml::dump($landoFileConfig, 5, 2));
@@ -337,6 +374,8 @@ class RoboFile extends Tasks {
       $this->say('> Cache service exists in the lando configuration. Skipping...');
     }
   }
+
+  // ++++++++++++++++++++++++++++ Validate Code ++++++++++++++++++++++++++++++++++++++++++++//
 
   /**
    * Validate Composer.
@@ -397,10 +436,10 @@ class RoboFile extends Tasks {
    */
   public function lintFrontendSrc() {
     $this->say("Validating Frontend source files...");
-    $config = $this->getConfig();
+    $config = Robo::config();
     $fs = new Filesystem();
     if ($fs->exists($this->getDocroot() . '/docroot/themes/custom')) {
-      chdir($this->getDocroot() . '/docroot/themes/custom/' . $config['project']['machine_name'] . '_theme');
+      chdir($this->getDocroot() . '/docroot/themes/custom/' . $config->get('project.machine_name') . '_theme');
       $this->taskExecStack()
         ->stopOnFail()
         ->exec('yarn install')
@@ -408,6 +447,31 @@ class RoboFile extends Tasks {
         ->run();
     }
   }
+
+  // +++++++++++++++++++++++++++++++ Testing +++++++++++++++++++++++++++++++++++++++++++++++//
+
+  /**
+   * Run behat tests.
+   *
+   * @command test:run:behat
+   */
+  public function runBehatTests() {
+    $this->say("Running Behat tests...");
+    chdir($this->getDocroot() . '/tests/behat');
+    return $this->taskExec('behat');
+  }
+
+  /**
+   * Run PHPUnit tests.
+   *
+   * @command test:run:phpunit
+   */
+  public function runPhpUnitTests() {
+    $this->say("Running PHPUnit tests...");
+    return $this->taskExec('simple-phpunit --config ' . $this->getDocroot() . '/tests/phpunit/phpunit.xml ' . $this->getDocroot() . '/tests/phpunit/');
+  }
+
+  // +++++++++++++++++++++++++++ Helpers +++++++++++++++++++++++++++++++++++++++++++++++++++//
 
   /**
    * Return drush with default arguments.
@@ -435,17 +499,6 @@ class RoboFile extends Tasks {
   }
 
   /**
-   * Get the project configurations.
-   */
-  public static function getConfig() {
-    $drupalFinder = new DrupalFinder();
-    $drupalFinder->locateRoot(getcwd());
-    $root = $drupalFinder->getComposerRoot();
-    $config = Yaml::parse(file_get_contents($root . "/config.yml"));
-    return $config;
-  }
-
-  /**
    * Returns the site UUID stored in exported configuration.
    *
    * @param string $cm_core_key
@@ -466,4 +519,16 @@ class RoboFile extends Tasks {
     return NULL;
   }
 
+  /**
+   * Installs composer dependencies.
+   *
+   * @return \Robo\Contract\TaskInterface
+   *   A task instance.
+   */
+  protected function installDependencies() {
+    chdir($this->getDocroot());
+    return $this->taskComposerInstall();
+  }
+
 }
+

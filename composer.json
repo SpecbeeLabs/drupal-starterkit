@@ -101,7 +101,7 @@
             "DrupalComposer\\DrupalScaffold\\Plugin::scaffold"
         ],
         "init-repo": [
-            "robo init:repo --load-from scripts/robo/RoboFile.php"
+            "robo init:repo"
         ],
         "setup-local": [
             "DrupalProject\\composer\\ScriptHandler::createLocalSettingsFile"

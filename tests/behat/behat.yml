@@ -14,7 +14,7 @@ default:
         - Drupal\DrupalExtension\Context\DrushContext
   extensions:
     Drupal\MinkExtension:
-      base_url: https://sdnn.lndo.site/
+      base_url: http://localhost
       files_path: '%paths.base%/tests/behat/files/'
       browser_name: chrome
       sessions:
