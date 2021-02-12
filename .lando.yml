@@ -7,6 +7,11 @@ config:
   drush: '*'
 services:
   appserver:
+    build_as_root:
+      - curl -sL https://deb.nodesource.com/setup_14.x | bash -
+      - apt-get install -y nodejs
+      - npm install -g gulp-cli
+      - npm install -g yarn
     environment:
       DRUSH_OPTIONS_ROOT: /app/docroot
       DRUSH_OPTIONS_URI: #PROJECT_NAME.lndo.site
@@ -35,12 +40,6 @@ services:
     hogfrom:
       - appserver
     portforward: true
-  node:
-    type: node:14
-    globals:
-      gulp-cli: latest
-      npm: latest
-      yarn: latest
   database:
     type: mariadb:10.4
     creds:
@@ -56,17 +55,12 @@ tooling:
     description: Run behat tests locally.
     cmd:
       - /app/vendor/bin/behat
-  yarn:
-    service: node
   setup:
     service: appserver
     description: Install Drupal.
     cmd:
-      - echo '\033[0;33m>> Setting up local environment... \033[0m'
-      - composer install -vvv
-      - composer setup-local -vvv
-      - robo drupal:install
-      - drush uli
+      - robo setup
+      - robo build:frontend:reqs
   drupal:update:
     service: appserver
     description: Update Drupal database & configurations
@@ -82,7 +76,6 @@ tooling:
       - robo sync:db
       - robo import:config
       - robo sync:files
-      - drush uli
   sync:db:
     service: appserver
     description: Sync database from remote origin
@@ -90,7 +83,6 @@ tooling:
       - echo '\033[0;33m>> Syncing database assets from remote server... \033[0m'
       - robo sync:db
       - robo import:config
-      - drush uli
   sync:files:
     service: appserver
     description: Sync files from remote origin

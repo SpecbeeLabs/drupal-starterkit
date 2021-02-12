@@ -125,7 +125,6 @@ class RoboFile extends Tasks {
     $this->say('setup:git');
     $config = Robo::config();
     $task = $this->taskGitStack()
-      ->dir((getcwd()) . '/../..')
       ->stopOnFail()
       ->exec('git init')
       ->exec('git remote add origin ' . $config->get('project.repo'))
@@ -142,13 +141,9 @@ class RoboFile extends Tasks {
    */
   public function setup() {
     $this->say('Setting up local environment...');
-    $config = Robo::config();
     $collection = $this->collectionBuilder();
     $collection->addTask($this->installDependencies());
-    // $collection->addTask($this->drupalInstall());
-    if (is_dir($this->getDocroot() . '/docroot/themes/custom/' . $config->get('project.machine_name') . '_theme')) {
-      $collection->addTaskList($this->buildFrontendReqs());
-    }
+    $collection->addTask($this->drupalInstall());
     return $collection->run();
   }
 
@@ -284,17 +279,22 @@ class RoboFile extends Tasks {
   /**
    * Build theme dependencies.
    *
-   * @return \Robo\Task\Base\Exec[]
+   * @command build:frontend:reqs
    */
-  protected function buildFrontendReqs() {
-    $task = [];
+  public function buildFrontendReqs() {
     $config = Robo::config();
-    $task[] = $this->taskExecStack()
+    if (is_dir($this->getDocroot() . '/docroot/themes/custom/' . $config->get('project.machine_name') . '_theme')) {
+      $task = $this->taskExecStack()
       ->dir($this->getDocroot() . '/docroot/themes/custom/' . $config->get('project.machine_name') . '_theme')
       ->exec('yarn install')
-      ->exec('yarn build');
+      ->exec('yarn build')
+      ->run();
 
-    return $task;
+      return $task;
+    }
+    else {
+      $this->say("No theme found.");
+    }
   }
 
   // ++++++++++++++++++++++++++++ Service initialization +++++++++++++++++++++++++++++++++++//
@@ -324,7 +324,6 @@ class RoboFile extends Tasks {
       // Get the elasticsearch_connector module from Github,
       // since the Drupal module is not Drupal 9 compatible yet.
       $this->say('> Adding the Elasticsearch connector package via composer. \n');
-      chdir('../..');
       $this->taskComposerRequire()->dependency('drupal/elasticsearch_connector', '^7.0@alpha')->ansi()->run();
     }
     else {
@@ -355,7 +354,6 @@ class RoboFile extends Tasks {
       $this->say('> Lando configurations are updated with cache service.\n');
 
       $this->say('> Adding the Drupal Redis module via composer. \n');
-      chdir('../..');
       $this->taskComposerRequire()->dependency('drupal/redis', '^1.4')->ansi()->run();
       $this->taskWriteToFile($this->getDocroot() . '/docroot/sites/default/settings.local.php')
         ->append()
@@ -482,7 +480,7 @@ class RoboFile extends Tasks {
   protected function drush() {
     // Drush needs an absolute path to the docroot.
     $docroot = $this->getDocroot() . '/docroot';
-    return $this->taskExec('../../vendor/bin/drush')
+    return $this->taskExec('vendor/bin/drush')
       ->option('root', $docroot, '=');
   }
 
