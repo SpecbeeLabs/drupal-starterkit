@@ -1,101 +1,194 @@
-# CircleCI integration with Drupal 8.
-
-# Reusable steps.
-
-## Copies .circle/Robofile to the repository root.
-copy_robo: &copy_robo
-  run:
-    name: Copy RoboFile.php
-    command: cp .circleci/RoboFile.php .
+# CircleCI configuration file to build, lint, test & deploy.
 
 ## Defines images and working directory.
 defaults: &defaults
   docker:
-    - image: specbee/drupal8ci:latest
-    - image: selenium/standalone-chrome-debug:3.7.1-beryllium
+    - image: specbee/drupalci:9.1.4-php7.4-apache
     - image: mariadb:10.3
       environment:
         MYSQL_ALLOW_EMPTY_PASSWORD: 1
-  working_directory: /var/www/html
+  working_directory: /app
 
 ## Defines the cache restoring mechanism.
-restore_cache: &restore_cache
-  # We use the composer.lock as a way to determine if we can cache our build.
+restore_composer_cache: &restore_composer_cache
   keys:
-  - v1-dependencies-{{ checksum "composer.lock" }}
-  # fallback to using the latest cache if no exact match is found
-  - v1-dependencies-
+  - composer-v2-{{ checksum "composer.lock" }}
+  - composer-v2-
+restore_node_cache: &restore_node_cache
+  keys:
+  - node-v14-{{ checksum "docroot/themes/custom/specbee_theme/yarn.lock" }}
+  - node-v14-
 
 ## Defines the cache saving mechanism.
-save_cache: &save_cache
+save_composer_cache: &save_composer_cache
   paths:
     - ./vendor
-  key: v1-dependencies-{{ checksum "composer.lock" }}
+    - ./docroot/core
+    - ./docroot/modules/contrib
+    - ./docroot/libraries
+    - ./docroot/themes/contrib
+  key: composer-v2-{{ checksum "composer.lock" }}
+save_node_cache: &save_node_cache
+  paths:
+    - ./docroot/themes/custom/specbee_theme/node_modules
+  key: node-v14-{{ checksum "docroot/themes/custom/specbee_theme/yarn.lock" }}
 
-#Jobs
+# Filter branches
+filter_dev: &filter_dev
+  filters:
+    branches:
+      only:
+        - develop
 
-## Job to run the update path and Behat tests.
-behat_tests: &behat_tests
+filter_uat: &filter_uat
+  filters:
+    branches:
+      only:
+        - master
+
+deploy: &deploy
+  name: Deploy Over SSH
+  command: |
+    set -e
+    ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
+    export BRANCH=$CIRCLE_BRANCH
+    echo SendEnv DOCROOT BRANCH >> ~/.ssh/config
+    ssh $SSH_USER@$SSH_HOST 'bash -s' < scripts/circlci/deploy.sh
+
+# Install dependencies
+install_dependencies: &install_dependencies
   <<: *defaults
   steps:
     - checkout
-    - *copy_robo
-    - restore_cache: *restore_cache
+    - restore_cache: *restore_composer_cache
+    - run:
+        name: Install composer dependencies
+        command: composer install
+    - save_cache: *save_composer_cache
+    - restore_cache: *restore_node_cache
+    - run:
+        name: Build frontend requirements
+        command: robo build:frontend:reqs
+    - save_cache: *save_node_cache
+
+# Validate code
+validate_composer: &validate_composer
+  <<: *defaults
+  steps:
+    - checkout
+    - restore_cache: *restore_composer_cache
+    - run:
+        name: Validate composer.json & lock files.
+        command: robo validate:composer
+    - save_cache: *save_composer_cache
+run_phpcs: &run_phpcs
+  <<: *defaults
+  steps:
+    - checkout
+    - restore_cache: *restore_composer_cache
+    - run:
+        name: Sniffing the custom modules and themes.
+        command: robo validate:phpcs:sniff
+    - save_cache: *save_composer_cache
+lint_frontend_src: &lint_frontend_src
+  <<: *defaults
+  steps:
+    - checkout
+    - restore_cache: *restore_composer_cache
+    - restore_cache: *restore_node_cache
+    - run:
+        name: Lint frontend source.
+        command: robo validate:frontend:src
+    - save_cache: *save_node_cache
+    - save_cache: *save_composer_cache
+
+# Install Drupal & run Behat tests
+test_run_behat: &test_run_behat
+  <<: *defaults
+  steps:
+    - checkout
+    - restore_cache: *restore_composer_cache
+    - run:
+        name: Install Drupal
+        command: robo setup ci
+    - run:
+        name: Restart apache service
+        command: service apache2 restart
     - run:
         name: Run Behat tests
-        command: robo job:run-behat-tests
-    - save_cache: *save_cache
-    - store_test_results:
-        path: /var/www/html/artifacts/behat
-    - store_artifacts:
-        path: /var/www/html/artifacts
+        command: robo test:run:behat
+    - save_cache: *save_composer_cache
 
-## Job to check coding standards.
-code_sniffer: &code_sniffer
+# Deploy
+deploy_dev: &deploy_dev
   <<: *defaults
   steps:
     - checkout
-    - *copy_robo
-    - restore_cache: *restore_cache
     - run:
-        name: Inspect coding standards
-        command: robo job:check-coding-standards
-    - store_test_results:
-        path: /var/www/html/artifacts/phpcs
-    - store_artifacts:
-        path: /var/www/html/artifacts
-    - save_cache: *save_cache
+        name: Set environment variables
+        command: |
+          echo "export DOCROOT=$DOCROOT_DEV" >> $BASH_ENV
+          echo "export SSH_USER=$SSH_USER_DEV" >> $BASH_ENV
+          echo "export SSH_HOST=$SSH_HOST_DEV" >> $BASH_ENV
+    - run:
+        <<: *deploy
 
-## Job to check coding standards.
-fe_lint: &fe_lint
+deploy_uat: &deploy_uat
   <<: *defaults
   steps:
     - checkout
-    - *copy_robo
-    - restore_cache: *restore_cache
     - run:
-        name: Validate FE
-        command: robo job:validate-front-end
-    - store_test_results:
-        path: /var/www/html/artifacts/lint
-    - store_artifacts:
-        path: /var/www/html/artifacts
-    - save_cache: *save_cache
+        name: Set environment variables
+        command: |
+          echo "export DOCROOT=$DOCROOT_UAT" >> $BASH_ENV
+          echo "export SSH_USER=$SSH_USER_UAT" >> $BASH_ENV
+          echo "export SSH_HOST=$SSH_HOST_UAT" >> $BASH_ENV
+    - run:
+        <<: *deploy
 
 # Declare all of the jobs we should run.
 version: 2
 jobs:
-  run-code-sniffer:
-     <<: *code_sniffer
-  run-yarn-lint:
-    <<: *fe_lint
-  run-behat-tests:
-     <<: *behat_tests
+  install:dependencies:
+    <<: *install_dependencies
+  validate:composer:
+    <<: *validate_composer
+  run:phpcs:
+    <<: *run_phpcs
+  lint:frontend:src:
+    <<: *lint_frontend_src
+  test:run:behat:
+    <<: *test_run_behat
+  deploy:dev:
+    <<: *deploy_dev
+  deploy:uat:
+    <<: *deploy_uat
 
 # Declare a workflow that runs all of our jobs in parallel.
 workflows:
   version: 2
-  test_and_lint:
+  build_artifact:
     jobs:
-      - run-code-sniffer
-      - run-yarn-lint
+      - install:dependencies
+      - validate:composer:
+          requires:
+            - install:dependencies
+      - run:phpcs:
+          requires:
+            - install:dependencies
+      - lint:frontend:src:
+          requires:
+            - install:dependencies
+      - test:run:behat:
+          requires:
+            - validate:composer
+            - run:phpcs
+            - lint:frontend:src
+      - delpoy:dev:
+          <<: *filter_dev
+          requires:
+            - test:run:behat
+      - delpoy:uat:
+          <<: *filter_uat
+          requires:
+            - test:run:behat

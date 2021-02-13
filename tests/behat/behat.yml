@@ -1,11 +1,11 @@
 default:
   autoload:
-    "": '%paths.base%/tests/behat/features/bootstrap'
+    "": 'features/bootstrap'
   suites:
     default:
-      failure_path: '%paths.base%/tests/behat/failures'
+      failure_path: 'failures'
       paths:
-        - '%paths.base%/tests/behat/features'
+        - 'features'
       contexts:
         - FeatureContext
         - Drupal\DrupalExtension\Context\DrupalContext
@@ -15,7 +15,7 @@ default:
   extensions:
     Drupal\MinkExtension:
       base_url: http://localhost
-      files_path: '%paths.base%/tests/behat/files/'
+      files_path: 'files/'
       browser_name: chrome
       sessions:
         default:
@@ -29,7 +29,7 @@ default:
       screenshot_taking_mode: failed_steps
       image_drivers:
         local:
-          screenshot_directory: "%paths.base%/tests/behat/failed_screenshots"
+          screenshot_directory: "failed_screenshots"
           clear_screenshot_directory: true
     Drupal\DrupalExtension:
       blackbox: ~

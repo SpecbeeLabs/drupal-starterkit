@@ -18,11 +18,18 @@ use Symfony\Component\Yaml\Yaml;
 class RoboFile extends Tasks {
 
   /**
-   * The database URL.
+   * The local database URL.
    *
    * @var string
    */
   const DB_URL = 'mysql://drupal:drupal@database/drupal';
+
+  /**
+   * The local database URL.
+   *
+   * @var string
+   */
+  const DB_URL_CI = 'mysql://root@127.0.0.1/drupal8';
 
 
   // +++++++++++++++++++++++++ Repository initialization ++++++++++++++++++++++++++++++++++ //
@@ -139,25 +146,31 @@ class RoboFile extends Tasks {
   /**
    * Setup a fresh Drupal site from existing config if present.
    */
-  public function setup() {
+  public function setup($env = 'local') {
     $this->say('Setting up local environment...');
     $collection = $this->collectionBuilder();
     $collection->addTask($this->installDependencies());
-    $collection->addTask($this->drupalInstall());
+    $collection->addTask($this->taskExec('composer setup-local'));
+    $collection->addTask($this->drupalInstall($env));
     return $collection->run();
   }
 
   /**
    * Setup Drupal site.
    */
-  public function drupalInstall() {
+  public function drupalInstall($env = 'local') {
     $this->say('drupal:install');
     $config = Robo::config();
     $task = $this->drush()
       ->args("site-install")
-      ->arg('lightning')
-      ->option('db-url', static::DB_URL, '=')
-      ->option('site-name', $config->get('project.human_name'), '=')
+      ->arg('lightning');
+      if ($env === 'ci') {
+        $task->option('db-url', static::DB_URL_CI, '=');
+      }
+      else {
+        $task->option('db-url', static::DB_URL, '=');
+      }
+      $task->option('site-name', $config->get('project.human_name'), '=')
       ->option('site-mail', $config->get('project.mail'), '=')
       ->option('account-name', 'admin')
       ->option('account-mail', $config->get('project.mail'), '=');
@@ -276,12 +289,15 @@ class RoboFile extends Tasks {
     return $task;
   }
 
+  // ++++++++++++++++++++++++++++++ Frontend tools ++++++++++++++++++++++++++++++++++++++++//
+
   /**
    * Build theme dependencies.
    *
    * @command build:frontend:reqs
    */
   public function buildFrontendReqs() {
+    $this->say('build:frontend:reqs');
     $config = Robo::config();
     if (is_dir($this->getDocroot() . '/docroot/themes/custom/' . $config->get('project.machine_name') . '_theme')) {
       $task = $this->taskExecStack()
@@ -402,29 +418,36 @@ class RoboFile extends Tasks {
    * @command validate:phpcs:sniff
    */
   public function runPhpcs() {
+    $tasks = [];
     $this->say("Validating Drupal coding standards...");
+    $tasks[] = $this->taskExecStack()
+        ->exec('vendor/bin/phpcs --config-set installed_paths vendor/drupal/coder/coder_sniffer');
+    $tasks[] = $this->taskFilesystemStack()
+        ->mkdir('artifacts/phpcs');
     $fs = new Filesystem();
     if ($fs->exists($this->getDocroot() . '/docroot/modules/custom')) {
-      $this->taskExecStack()
+    $tasks[] = $this->taskExecStack()
         ->stopOnFail()
         ->exec('phpcs -s --standard=Drupal --extensions=php,module,inc,install,profile,theme,yml docroot/modules/custom')
-        ->exec('phpcs -s --standard=DrupalPractice --extensions=php,module,inc,install,profile,theme,yml docroot/modules/custom')
-        ->run();
+        ->exec('phpcs -s --standard=DrupalPractice --extensions=php,module,inc,install,profile,theme,yml docroot/modules/custom');
     }
     else {
       $this->say("No custom modules found. Skipping...");
     }
 
     if ($fs->exists($this->getDocroot() . '/docroot/themes/custom')) {
-      $this->taskExecStack()
+    $tasks[] = $this->taskExecStack()
         ->stopOnFail()
         ->exec('phpcs -s --standard=Drupal --extensions=inc,theme,yml docroot/themes/custom')
-        ->exec('phpcs -s --standard=DrupalPractice --extensions=inc,theme,yml docroot/themes/custom')
-        ->run();
+        ->exec('phpcs -s --standard=DrupalPractice --extensions=inc,theme,yml docroot/themes/custom');
     }
     else {
       $this->say("No custom themes found. Skipping...");
     }
+
+    $collection = $this->collectionBuilder();
+    $collection->addTaskList($tasks);
+    return $collection->run();
   }
 
   /**
@@ -438,11 +461,15 @@ class RoboFile extends Tasks {
     $fs = new Filesystem();
     if ($fs->exists($this->getDocroot() . '/docroot/themes/custom')) {
       chdir($this->getDocroot() . '/docroot/themes/custom/' . $config->get('project.machine_name') . '_theme');
-      $this->taskExecStack()
+      $task = $this->taskExecStack()
         ->stopOnFail()
-        ->exec('yarn install')
         ->exec('yarn lint')
         ->run();
+
+      return $task;
+    }
+    else {
+      $this->say("No theme found. Skipping...");
     }
   }
 
@@ -468,6 +495,22 @@ class RoboFile extends Tasks {
     $this->say("Running PHPUnit tests...");
     return $this->taskExec('simple-phpunit --config ' . $this->getDocroot() . '/tests/phpunit/phpunit.xml ' . $this->getDocroot() . '/tests/phpunit/');
   }
+
+  // +++++++++++++++++++++++++++ Build artifact ++++++++++++++++++++++++++++++++++++++++++++//
+
+  /**
+   * Build the application artifact.
+   *
+   * @command build:artifact
+   */
+  public function buildArtifact() {
+    $this->say('build:artifact');
+    $this->installDependencies();
+    $this->drupalUpdate();
+    $this->buildFrontendReqs();
+    $this->drush()->arg('cache-rebuild');
+  }
+
 
   // +++++++++++++++++++++++++++ Helpers +++++++++++++++++++++++++++++++++++++++++++++++++++//
 
