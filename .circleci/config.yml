@@ -184,11 +184,11 @@ workflows:
             - validate:composer
             - run:phpcs
             - lint:frontend:src
-      - delpoy:dev:
+      - deploy:dev:
           <<: *filter_dev
           requires:
             - test:run:behat
-      - delpoy:uat:
+      - deploy:uat:
           <<: *filter_uat
           requires:
             - test:run:behat
