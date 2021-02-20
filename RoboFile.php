@@ -79,20 +79,20 @@ class RoboFile extends Tasks {
     $this->say('setup:drupal-alias');
     $config = Robo::config();
     $drushFile = $this->getDocroot() . '/drush/sites/' . $config->get('project.machine_name') . '.site.yml';
-    if (empty($config->get('drush.dev.host')) ||
-    empty($config->get('drush.dev.user')) ||
-    empty($config->get('drush.dev.root')) ||
-    empty($config->get('drush.dev.uri')) ||
-    empty($config->get('drush.stage.host')) ||
-    empty($config->get('drush.stage.user')) ||
-    empty($config->get('drush.stage.root')) ||
-    empty($config->get('drush.stage.uri'))) {
+    if (empty($config->get('remote.dev.host')) ||
+    empty($config->get('remote.dev.user')) ||
+    empty($config->get('remote.dev.root')) ||
+    empty($config->get('remote.dev.uri')) ||
+    empty($config->get('remote.stage.host')) ||
+    empty($config->get('remote.stage.user')) ||
+    empty($config->get('remote.stage.root')) ||
+    empty($config->get('remote.stage.uri'))) {
       echo 'Drush aliases were not properly configured. Please configure the information about remote server and run "robo setup:drush-alias to setup the Drush aliases."';
       echo "\n";
     }
     $task = $this->taskReplaceInFile($drushFile)
       ->from(['#REMOTE_DEV_HOST', '#REMOTE_DEV_USER', '#REMOTE_DEV_ROOT', '#REMOTE_DEV_URI', '#REMOTE_STAGE_HOST', '#REMOTE_STAGE_USER', '#REMOTE_STAGE_ROOT', '#REMOTE_STAGE_URI'])
-      ->to([$config->get('drush.dev.host'), $config->get('drush.dev.user'), $config->get('drush.dev.root'), $config->get('drush.dev.uri'), $config->get('drush.stage.host'), $config->get('drush.stage.user'), $config->get('drush.stage.root'), $config->get('drush.stage.uri')]);
+      ->to([$config->get('remote.dev.host'), $config->get('remote.dev.user'), $config->get('remote.dev.root'), $config->get('remote.dev.uri'), $config->get('remote.stage.host'), $config->get('remote.stage.user'), $config->get('remote.stage.root'), $config->get('remote.stage.uri')]);
 
     return $task;
   }
