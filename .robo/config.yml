@@ -1,5 +1,5 @@
 project:
-  machine_name: specbee
+  machine_name: specbee123
   prefix: SB
   human_name: "Specbee"
   repo: git@bitbucket.org:specbee/project-repo.git

@@ -86,7 +86,7 @@
     "prefer-stable": true,
     "scripts": {
         "post-create-project-cmd": [
-            "robo init:git"
+            "robo init:git --load-from $(pwd)/.robo/Commands/Bootstrap/InitGitCommand.php"
         ],
         "post-install-cmd": [
             "DrupalProject\\composer\\ScriptHandler::createRequiredFiles",
@@ -96,7 +96,7 @@
             "DrupalComposer\\DrupalScaffold\\Plugin::scaffold"
         ],
         "init-repo": [
-            "robo init:repo"
+            "robo init:repo --load-from $(pwd)/.robo/Commands/Bootstrap/InitRepoCommand.php"
         ]
     }
 }

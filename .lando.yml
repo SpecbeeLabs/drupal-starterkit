@@ -9,9 +9,9 @@ services:
   appserver:
     build_as_root:
       - curl -sL https://deb.nodesource.com/setup_14.x | bash -
-      - apt-get install -y nodejs
-      - npm install -g gulp-cli
-      - npm install -g yarn
+      - apt-get install -y nodejs > /dev/null
+      - npm install -g gulp-cli > /dev/null
+      - npm install -g yarn > /dev/null
     environment:
       DRUSH_OPTIONS_ROOT: /app/docroot
       DRUSH_OPTIONS_URI: #PROJECT_NAME.lndo.site
@@ -59,67 +59,62 @@ tooling:
     service: appserver
     description: Install Drupal.
     cmd:
-      - robo setup
-      - robo build:frontend:reqs
+      - robo setup --load-from $LANDO_MOUNT/.robo/Commands/Drupal/InstallCommand.php
+      - robo build:frontend:reqs --load-from $LANDO_MOUNT/.robo/Commands/Frontend/BuildCommand.php
   drupal:update:
     service: appserver
     description: Update Drupal database & configurations
     cmd:
-      - echo '\033[0;33m>> Updating Drupal database & configurations... \033[0m'
-      - composer install -vvv
-      - robo drupal:update
+      - robo drupal:update --load-from $LANDO_MOUNT/.robo/Commands/Drupal/DatabaseUpdateCommand.php
+      - robo import:config --load-from $LANDO_MOUNT/.robo/Commands/Drupal/ImportConfigCommand.php
   sync:all:
     service: appserver
     description: Sync database and files from remote origin
     cmd:
-      - echo '\033[0;33m>> Syncing database & files assets from remote server... \033[0m'
-      - robo sync:db
-      - robo import:config
-      - robo sync:files
+      - robo sync:db --load-from $LANDO_MOUNT/.robo/Commands/Drupal/SyncCommand.php
+      - robo import:config --load-from $LANDO_MOUNT/.robo/Commands/Drupal/ImportConfigCommand.php
+      - robo sync:files --load-from $LANDO_MOUNT/.robo/Commands/Drupal/SyncCommand.php
   sync:db:
     service: appserver
     description: Sync database from remote origin
     cmd:
-      - echo '\033[0;33m>> Syncing database assets from remote server... \033[0m'
-      - robo sync:db
-      - robo import:config
+      - robo sync:db --load-from $LANDO_MOUNT/.robo/Commands/Drupal/SyncCommand.php
+      - robo import:config --load-from $LANDO_MOUNT/.robo/Commands/Drupal/ImportConfigCommand.php
   sync:files:
     service: appserver
     description: Sync files from remote origin
     cmd:
-      - echo '\033[0;33m>> Syncing files assets from remote server... \033[0m'
-      - robo sync:files
+      - robo sync:files --load-from $LANDO_MOUNT/.robo/Commands/Drupal/SyncCommand.php
   validate:all:
     service: appserver
     description: Validating standards on code.
     cmd:
-      - echo '\033[0;33m>> Validating standards on code.... \033[0m'
-      - robo validate:composer
-      - robo validate:phpcs:sniff
-      - robo validate:frontend:src
+      - robo validate:composer --load-from $LANDO_MOUNT/.robo/Commands/Testing/ValidateCommand.php
+      - robo validate:phpcs:sniff --load-from $LANDO_MOUNT/.robo/Commands/Testing/ValidateCommand.php
+      - robo validate:frontend:src --load-from $LANDO_MOUNT/.robo/Commands/Testing/ValidateCommand.php
   init:service:search:
     service: appserver
     description: Add Elasticsearch support to the app
     cmd:
-      - robo init:service:search
+      - robo recipes:init:service:search --load-from $LANDO_MOUNT/.robo/Commands/Recipes/SearchServiceCommand.php
   init:service:cache:
     service: appserver
     description: Add Redis cache support to the app
     cmd:
-      - robo init:service:cache
+      - robo recipes:init:service:cache --load-from $LANDO_MOUNT/.robo/Commands/Recipes/CacheServiceCommand.php
   test:run:all:
     service: appserver
     description: Run behat tests & PHPUnit test locally.
     cmd:
-      - robo test:run:phpunit
-      - robo test:run:behat
+      - robo test:run:phpunit -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php
+      - robo test:run:behat -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php
   test:run:behat:
     service: appserver
     description: Run behat tests locally.
     cmd:
-      - robo test:run:behat
+      - robo test:run:behat -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php
   test:run:phpunit:
     service: appserver
     description: Run PHPUnit test locally.
     cmd:
-      - robo test:run:phpunit
+      - robo test:run:phpunit -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php
