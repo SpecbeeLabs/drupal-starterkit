@@ -86,11 +86,11 @@
     "prefer-stable": true,
     "scripts": {
         "post-create-project-cmd": [
-            "DrupalProject\\composer\\ScriptHandler::createLocalSettingsFile",
             "robo init:git"
         ],
         "post-install-cmd": [
-            "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
+            "DrupalProject\\composer\\ScriptHandler::createRequiredFiles",
+            "DrupalProject\\composer\\ScriptHandler::createLocalSettingsFile"
         ],
         "drupal-scaffold": [
             "DrupalComposer\\DrupalScaffold\\Plugin::scaffold"
