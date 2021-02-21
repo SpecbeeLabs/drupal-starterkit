@@ -44,7 +44,6 @@ class RoboFile extends Tasks {
     $collection->addTask($this->initDrushAlias());
     $collection->addTask($this->initLando());
     $collection->addTask($this->initGrumphp());
-    $collection->addTask($this->initGit());
 
     return $collection->run();
   }
