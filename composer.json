@@ -86,18 +86,10 @@
     "prefer-stable": true,
     "scripts": {
         "post-create-project-cmd": [
+            "DrupalProject\\composer\\ScriptHandler::createLocalSettingsFile",
             "robo init:git"
         ],
-        "pre-install-cmd": [
-            "DrupalProject\\composer\\ScriptHandler::checkComposerVersion"
-        ],
         "post-install-cmd": [
-            "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
-        ],
-        "pre-update-cmd": [
-            "DrupalProject\\composer\\ScriptHandler::checkComposerVersion"
-        ],
-        "post-update-cmd": [
             "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
         ],
         "drupal-scaffold": [
@@ -105,9 +97,6 @@
         ],
         "init-repo": [
             "robo init:repo"
-        ],
-        "setup-local": [
-            "DrupalProject\\composer\\ScriptHandler::createLocalSettingsFile"
         ]
     }
 }

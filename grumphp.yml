@@ -4,16 +4,10 @@ parameters:
   bin_dir: vendor/bin
   tasks:
     phplint: null
-    yamllint:
-      whitelist_patterns: {  }
-      ignore_patterns: {  }
-      object_support: false
-      exception_on_invalid_type: false
-      parse_constant: false
-      parse_custom_tags: false
-    composer: null
-    composer_normalize: null
-    jsonlint: null
+    yamllint: ~
+    composer: ~
+    composer_normalize: ~
+    jsonlint: ~
     phpcs:
       standard: Drupal
       ignore_patterns:
@@ -35,13 +29,5 @@ parameters:
         - txt
         - md
     git_commit_message:
-      allow_empty_message: false
-      enforce_capitalized_subject: true
-      enforce_no_subject_punctuations: false
-      enforce_no_subject_trailing_period: false
-      enforce_single_lined_subject: true
-      max_subject_width: 0
       matchers:
         'Must follow the pattern': '/(^${PROJECT_PREFIX}-[0-9]+(: )[^ ].{15,}\.)|(Merge branch (.)+)/'
-      case_insensitive: true
-      multiline: false
