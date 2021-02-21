@@ -39,13 +39,10 @@ class RoboFile extends Tasks {
    */
   public function initRepo() {
     $this->say('init:repo');
-    $collection = $this->collectionBuilder();
-    $collection->addTask($this->copyDefaultDrushAlias());
-    $collection->addTask($this->initDrushAlias());
-    $collection->addTask($this->initLando());
-    $collection->addTask($this->initGrumphp());
-
-    return $collection->run();
+    $this->copyDefaultDrushAlias();
+    $this->confDrushAlias();
+    $this->confLando();
+    $this->confGrumphp();
   }
 
   /**
@@ -58,23 +55,21 @@ class RoboFile extends Tasks {
     $aliasPath = $drushPath . '/' . $config->get('project.machine_name') . '.site.yml';
 
     // Skip if alias file is already generated.
-    if (!file_exists($aliasPath)) {
-      $task = $this->taskFilesystemStack()
-        ->rename($drushPath . "/default.site.yml", $aliasPath, FALSE);
+    if (file_exists($aliasPath)) {
+      $this->io()->success('Drush alias file exists. Skipping');
+      return;
     }
     else {
-      $this->say("Drush alias file exists. Skipping");
-      $task = $this->taskFilesystemStack()
-        ->rename($aliasPath, $aliasPath, TRUE);
+      $this->taskFilesystemStack()
+        ->rename($drushPath . "/default.site.yml", $aliasPath, FALSE)
+        ->run();
     }
-
-    return $task;
   }
 
   /**
    * Setup the Drupal aliases.
    */
-  public function initDrushAlias() {
+  public function confDrushAlias() {
     $this->say('setup:drupal-alias');
     $config = Robo::config();
     $drushFile = $this->getDocroot() . '/drush/sites/' . $config->get('project.machine_name') . '.site.yml';
@@ -86,42 +81,47 @@ class RoboFile extends Tasks {
     empty($config->get('remote.stage.user')) ||
     empty($config->get('remote.stage.root')) ||
     empty($config->get('remote.stage.uri'))) {
-      echo 'Drush aliases were not properly configured. Please configure the information about remote server and run "robo setup:drush-alias to setup the Drush aliases."';
-      echo "\n";
+      $this->io->note('Drush aliases were not properly configured.');
+      $this->io->note('Please add the information about remote server and run the command again.');
+      return;
     }
-    $task = $this->taskReplaceInFile($drushFile)
+    $this->taskReplaceInFile($drushFile)
       ->from(['#REMOTE_DEV_HOST', '#REMOTE_DEV_USER', '#REMOTE_DEV_ROOT', '#REMOTE_DEV_URI', '#REMOTE_STAGE_HOST', '#REMOTE_STAGE_USER', '#REMOTE_STAGE_ROOT', '#REMOTE_STAGE_URI'])
-      ->to([$config->get('remote.dev.host'), $config->get('remote.dev.user'), $config->get('remote.dev.root'), $config->get('remote.dev.uri'), $config->get('remote.stage.host'), $config->get('remote.stage.user'), $config->get('remote.stage.root'), $config->get('remote.stage.uri')]);
-
-    return $task;
+      ->to([$config->get('remote.dev.host'), $config->get('remote.dev.user'), $config->get('remote.dev.root'), $config->get('remote.dev.uri'), $config->get('remote.stage.host'), $config->get('remote.stage.user'), $config->get('remote.stage.root'), $config->get('remote.stage.uri')])
+      ->run();
   }
 
   /**
    * Setup lando.yml for local environment.
    */
-  public function initLando() {
+  public function confLando() {
     $this->say('setup:lando');
     $config = Robo::config();
     $landoFile = $this->getDocroot() . '/.lando.yml';
     $task = $this->taskReplaceInFile($landoFile)
       ->from('#PROJECT_NAME')
-      ->to($config->get('project.machine_name'));
-
-    return $task;
+      ->to($config->get('project.machine_name'))
+      ->run();
+    if ($task->wasSuccessful()) {
+      $this->io->success("The .lando.yml was successfully initialiazed and configured.");
+    }
+    else {
+      $this->io->error($task->getMessage());
+      throw new Exception("Failed to udpate .lando.yml file!");
+    }
   }
 
   /**
    * Setup Grumphp file.
    */
-  public function initGrumphp() {
+  public function confGrumphp() {
     $this->say('setup:grumphp');
     $config = Robo::config();
     $file = $this->getDocroot() . '/grumphp.yml';
-    $task = $this->taskReplaceInFile($file)
+    $this->taskReplaceInFile($file)
       ->from('${PROJECT_PREFIX}')
-      ->to($config->get('project.prefix'));
-
-    return $task;
+      ->to($config->get('project.prefix'))
+      ->run();
   }
 
   /**
@@ -130,7 +130,7 @@ class RoboFile extends Tasks {
   public function initGit() {
     $this->say('setup:git');
     $config = Robo::config();
-    $task = $this->taskGitStack()
+    $this->taskGitStack()
       ->stopOnFail()
       ->exec("git init")
       ->commit('Initial commit.', '--allow-empty')

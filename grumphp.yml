@@ -9,7 +9,8 @@ parameters:
     composer_normalize: ~
     jsonlint: ~
     phpcs:
-      standard: Drupal
+      standard:
+        - docroot/core/phpcs.xml.dist
       ignore_patterns:
         - .github
         - bower_components
@@ -30,4 +31,4 @@ parameters:
         - md
     git_commit_message:
       matchers:
-        'Must follow the pattern': '/(^${PROJECT_PREFIX}-[0-9]+(: )[^ ].{15,}\.)|(Merge branch (.)+)/'
+        'Must follow the pattern': '/(^SB-[0-9]+(: )[^ ].{15,}\.)|(Merge branch (.)+)/'
