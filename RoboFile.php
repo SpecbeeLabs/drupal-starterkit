@@ -132,12 +132,14 @@ class RoboFile extends Tasks {
     $config = Robo::config();
     $task = $this->taskGitStack()
       ->stopOnFail()
-      ->exec('git init')
-      ->exec('git remote add origin ' . $config->get('project.repo'))
+      ->exec("git init")
+      ->commit('Initial commit.', '--allow-empty')
       ->add('-A')
-      ->commit($config->get('project.prefix') . '-000: Created project from Specbee boilerplate.');
-
-    return $task;
+      ->commit($config->get('project.prefix') . '-000: Created project from Specbee boilerplate.')
+      ->interactive(FALSE)
+      ->printOutput(FALSE)
+      ->printMetadata(FALSE)
+      ->run();
   }
 
   // +++++++++++++++++++++++++++++ Drupal Commands ++++++++++++++++++++++++++++++++++++++++ //
