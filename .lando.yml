@@ -59,62 +59,62 @@ tooling:
     service: appserver
     description: Install Drupal.
     cmd:
-      - robo setup --load-from $LANDO_MOUNT/.robo/Commands/Drupal/InstallCommand.php
-      - robo build:frontend:reqs --load-from $LANDO_MOUNT/.robo/Commands/Frontend/BuildCommand.php
+      - robo setup --load-from $LANDO_MOUNT/.robo/Commands/Drupal/InstallCommand.php --ansi
+      - robo build:frontend:reqs --load-from $LANDO_MOUNT/.robo/Commands/Frontend/BuildCommand.php --ansi
   drupal:update:
     service: appserver
     description: Update Drupal database & configurations
     cmd:
-      - robo drupal:update --load-from $LANDO_MOUNT/.robo/Commands/Drupal/DatabaseUpdateCommand.php
-      - robo import:config --load-from $LANDO_MOUNT/.robo/Commands/Drupal/ImportConfigCommand.php
+      - robo drupal:update --load-from $LANDO_MOUNT/.robo/Commands/Drupal/DatabaseUpdateCommand.php --ansi
+      - robo import:config --load-from $LANDO_MOUNT/.robo/Commands/Drupal/ImportConfigCommand.php --ansi
   sync:all:
     service: appserver
     description: Sync database and files from remote origin
     cmd:
-      - robo sync:db --load-from $LANDO_MOUNT/.robo/Commands/Drupal/SyncCommand.php
-      - robo import:config --load-from $LANDO_MOUNT/.robo/Commands/Drupal/ImportConfigCommand.php
-      - robo sync:files --load-from $LANDO_MOUNT/.robo/Commands/Drupal/SyncCommand.php
+      - robo sync:db --load-from $LANDO_MOUNT/.robo/Commands/Drupal/SyncCommand.php --ansi
+      - robo import:config --load-from $LANDO_MOUNT/.robo/Commands/Drupal/ImportConfigCommand.php --ansi
+      - robo sync:files --load-from $LANDO_MOUNT/.robo/Commands/Drupal/SyncCommand.php --ansi
   sync:db:
     service: appserver
     description: Sync database from remote origin
     cmd:
-      - robo sync:db --load-from $LANDO_MOUNT/.robo/Commands/Drupal/SyncCommand.php
-      - robo import:config --load-from $LANDO_MOUNT/.robo/Commands/Drupal/ImportConfigCommand.php
+      - robo sync:db --load-from $LANDO_MOUNT/.robo/Commands/Drupal/SyncCommand.php --ansi
+      - robo import:config --load-from $LANDO_MOUNT/.robo/Commands/Drupal/ImportConfigCommand.php --ansi
   sync:files:
     service: appserver
     description: Sync files from remote origin
     cmd:
-      - robo sync:files --load-from $LANDO_MOUNT/.robo/Commands/Drupal/SyncCommand.php
+      - robo sync:files --load-from $LANDO_MOUNT/.robo/Commands/Drupal/SyncCommand.php --ansi
   validate:all:
     service: appserver
     description: Validating standards on code.
     cmd:
-      - robo validate:composer --load-from $LANDO_MOUNT/.robo/Commands/Testing/ValidateCommand.php
-      - robo validate:phpcs:sniff --load-from $LANDO_MOUNT/.robo/Commands/Testing/ValidateCommand.php
-      - robo validate:frontend:src --load-from $LANDO_MOUNT/.robo/Commands/Testing/ValidateCommand.php
+      - robo validate:composer --load-from $LANDO_MOUNT/.robo/Commands/Testing/ValidateCommand.php --ansi
+      - robo validate:phpcs:sniff --load-from $LANDO_MOUNT/.robo/Commands/Testing/ValidateCommand.php --ansi
+      - robo validate:frontend:src --load-from $LANDO_MOUNT/.robo/Commands/Testing/ValidateCommand.php --ansi
   init:service:search:
     service: appserver
     description: Add Elasticsearch support to the app
     cmd:
-      - robo recipes:init:service:search --load-from $LANDO_MOUNT/.robo/Commands/Recipes/SearchServiceCommand.php
+      - robo recipes:init:service:search --load-from $LANDO_MOUNT/.robo/Commands/Recipes/SearchServiceCommand.php --ansi
   init:service:cache:
     service: appserver
     description: Add Redis cache support to the app
     cmd:
-      - robo recipes:init:service:cache --load-from $LANDO_MOUNT/.robo/Commands/Recipes/CacheServiceCommand.php
+      - robo recipes:init:service:cache --load-from $LANDO_MOUNT/.robo/Commands/Recipes/CacheServiceCommand.php --ansi
   test:run:all:
     service: appserver
     description: Run behat tests & PHPUnit test locally.
     cmd:
-      - robo test:run:phpunit -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php
-      - robo test:run:behat -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php
+      - robo test:run:phpunit -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php --ansi
+      - robo test:run:behat -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php --ansi
   test:run:behat:
     service: appserver
     description: Run behat tests locally.
     cmd:
-      - robo test:run:behat -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php
+      - robo test:run:behat -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php --ansi
   test:run:phpunit:
     service: appserver
     description: Run PHPUnit test locally.
     cmd:
-      - robo test:run:phpunit -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php
+      - robo test:run:phpunit -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php --ansi
