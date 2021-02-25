@@ -4,6 +4,7 @@ project:
   human_name: "Specbee"
   repo: git@bitbucket.org:specbee/project-repo.git
   mail: no-reply@specbee.com
+  profile: lightning
 remotes:
   dev:
     host: ""

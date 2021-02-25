@@ -43,7 +43,7 @@ class InstallCommand extends RoboFile {
     $config = Robo::config();
     $task = $this->drush()
       ->args('site-install')
-      ->arg('lightning');
+      ->arg($config['project.profile']);
     if ($env === 'ci') {
       $task->option('db-url', static::DB_URL_CI, '=');
     }
