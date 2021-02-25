@@ -15,6 +15,7 @@ class InitGitCommand extends RoboFile {
    */
   public function initGit() {
     $this->say('setup:git');
+    chdir($this->getDocroot());
     $config = Robo::config();
     $this->taskGitStack()
       ->stopOnFail()
