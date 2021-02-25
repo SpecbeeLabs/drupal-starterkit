@@ -61,7 +61,7 @@ class InitRepoCommand extends RoboFile {
       return;
     }
     $this->taskReplaceInFile($drushFile)
-      ->from(['#REMOTE_DEV_HOST', '#REMOTE_DEV_USER', '#REMOTE_DEV_ROOT', '#REMOTE_DEV_URI', '#REMOTE_STAGE_HOST', '#REMOTE_STAGE_USER', '#REMOTE_STAGE_ROOT', '#REMOTE_STAGE_URI'])
+      ->from(['${REMOTE_DEV_HOST}', '${REMOTE_DEV_USER}', '${REMOTE_DEV_ROOT}', '${REMOTE_DEV_URI}', '${REMOTE_STAGE_HOST}', '${REMOTE_STAGE_USER}', '${REMOTE_STAGE_ROOT}', '${REMOTE_STAGE_URI}'])
       ->to([$config->get('remote.dev.host'), $config->get('remote.dev.user'), $config->get('remote.dev.root'), $config->get('remote.dev.uri'), $config->get('remote.stage.host'), $config->get('remote.stage.user'), $config->get('remote.stage.root'), $config->get('remote.stage.uri')])
       ->run();
   }
@@ -74,7 +74,7 @@ class InitRepoCommand extends RoboFile {
     $config = Robo::config();
     $landoFile = $this->getDocroot() . '/.lando.yml';
     $task = $this->taskReplaceInFile($landoFile)
-      ->from('#PROJECT_NAME')
+      ->from('${PROJECT_NAME}')
       ->to($config->get('project.machine_name'))
       ->run();
     if ($task->wasSuccessful()) {

@@ -15,6 +15,7 @@ class SyncCommand extends RoboFile {
    */
   public function syncDb() {
     $this->say('sync:db');
+    $this->installDependencies();
     $config = Robo::config();
     $remote_alias = '@' . $config->get('project.machine_name') . '.' . $config->get('sync.remote');
     $local_alias = '@self';
@@ -44,6 +45,7 @@ class SyncCommand extends RoboFile {
    */
   public function syncFiles() {
     $this->say('sync:files');
+    $this->installDependencies();
     $config = Robo::config();
     $remote_alias = '@' . $config->get('project.machine_name') . '.' . $config->get('sync.remote');
     $local_alias = '@self';

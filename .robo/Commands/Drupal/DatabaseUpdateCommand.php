@@ -16,8 +16,13 @@ class DatabaseUpdateCommand extends RoboFile {
    */
   public function drupalUpdate() {
     $this->say('drupal:update');
-    $this->installDependencies();
-    $this->drush()->arg('cache-rebuild');
+    $this->installDependencies()
+      ->run();
+    $this->drush()
+      ->arg('cache-rebuild')
+      ->arg('--no-interaction')
+      ->arg('--ansi')
+      ->run();
     $this->updateDatabase();
   }
 

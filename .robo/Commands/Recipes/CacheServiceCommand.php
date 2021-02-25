@@ -18,7 +18,7 @@ class CacheServiceCommand extends RoboFile {
   public function initServiceCache() {
     $this->say('init:recipe-redis');
     $landoFileConfig = Yaml::parse(file_get_contents($this->getDocroot() . '/.lando.yml', 128));
-    $this->say('> Checking if there is cache service is setup.');
+    $this->say('Checking if there is cache service is setup.');
     if (!array_key_exists('cache', $landoFileConfig['services'])) {
       $landoFileConfig['services']['cache'] = [
         'type' => 'redis:4.0',
@@ -30,10 +30,10 @@ class CacheServiceCommand extends RoboFile {
       ];
 
       file_put_contents($this->getDocroot() . '/.lando.yml', Yaml::dump($landoFileConfig, 5, 2));
-      $this->say('> Lando configurations are updated with cache service.\n');
+      $this->io()->note('Lando configurations are updated with cache service.\n');
 
-      $this->say('> Adding the Drupal Redis module via composer. \n');
-      $this->taskComposerRequire()->dependency('drupal/redis', '^1.4')->ansi()->run();
+      $this->io()->section('Adding the Drupal Redis module via composer. \n');
+      $this->taskComposerRequire()->dependency('drupal/redis', '^1.4')->ansi()->noInteraction()->run();
       $this->taskWriteToFile($this->getDocroot() . '/docroot/sites/default/settings.local.php')
         ->append()
         ->line('# Redis Configuration.')
@@ -48,7 +48,7 @@ class CacheServiceCommand extends RoboFile {
         ->run();
     }
     else {
-      $this->say('> Cache service exists in the lando configuration. Skipping...');
+      $this->io()->note('> Cache service exists in the lando configuration. Skipping...');
     }
   }
 

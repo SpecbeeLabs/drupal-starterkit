@@ -14,7 +14,8 @@ class ImportConfigCommand extends RoboFile {
    */
   public function importConfig() {
     $this->say('import:config');
-
+    $this->installDependencies()
+      ->run();
     $this->drush()
       ->arg('config:set')
       ->arg('system.site')
@@ -31,7 +32,7 @@ class ImportConfigCommand extends RoboFile {
       ->run();
 
     if (!$task->wasSuccessful()) {
-      $this->say($task->getMessage());
+      $this->io()->error($task->getMessage());
       throw new Exception("Failed to import configuration updates!");
     }
 

@@ -24,10 +24,10 @@ class ValidateCommand extends RoboFile {
       ->exec('composer normalize --dry-run')
       ->run();
     if (!$result->wasSuccessful()) {
-      $this->say($result->getMessage());
+      $this->io()->error($result->getMessage());
       $this->logger->error("composer.lock is invalid.");
-      $this->say("If this is simply a matter of the lock file being out of date, you may attempt to use `composer update --lock` to quickly generate a new hash in your lock file.");
-      $this->say("Otherwise, `composer update` is likely necessary.");
+      $this->io()->note("If this is simply a matter of the lock file being out of date, you may attempt to use `composer update --lock` to quickly generate a new hash in your lock file.");
+      $this->io()->note("Otherwise, `composer update` is likely necessary.");
       throw new Exception("composer.lock is invalid!");
     }
   }
@@ -52,7 +52,7 @@ class ValidateCommand extends RoboFile {
         ->exec('phpcs -s --standard=DrupalPractice --extensions=php,module,inc,install,profile,theme,yml docroot/modules/custom');
     }
     else {
-      $this->say("No custom modules found. Skipping...");
+      $this->io()->note("No custom modules found. Skipping...");
     }
 
     if ($fs->exists($this->getDocroot() . '/docroot/themes/custom')) {
@@ -62,7 +62,7 @@ class ValidateCommand extends RoboFile {
         ->exec('phpcs -s --standard=DrupalPractice --extensions=inc,theme,yml docroot/themes/custom');
     }
     else {
-      $this->say("No custom themes found. Skipping...");
+      $this->io()->note("No custom themes found. Skipping...");
     }
 
     $collection = $this->collectionBuilder();
@@ -80,7 +80,7 @@ class ValidateCommand extends RoboFile {
     $config = Robo::config();
     $fs = new Filesystem();
     if ($fs->exists($this->getDocroot() . '/docroot/themes/custom')) {
-      chdir($this->getDocroot() . '/docroot/themes/custom/' . $config->get('project.machine_name') . '_theme');
+      chdir($this->getDocroot() . '/docroot/themes/custom/' . $config->get('project.config.theme'));
       $task = $this->taskExecStack()
         ->stopOnFail()
         ->exec('yarn lint')
@@ -89,7 +89,7 @@ class ValidateCommand extends RoboFile {
       return $task;
     }
     else {
-      $this->say("No theme found. Skipping...");
+      $this->io()->note("No theme found. Skipping...");
     }
   }
 

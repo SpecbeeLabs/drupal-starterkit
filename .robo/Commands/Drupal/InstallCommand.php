@@ -27,23 +27,18 @@ class InstallCommand extends RoboFile {
   /**
    * Setup a fresh Drupal site from existing config if present.
    */
-  public function setup($env = 'local') {
-    $this->say('Setting up local environment...');
-    $collection = $this->collectionBuilder();
-    $collection->addTask($this->installDependencies());
-    $collection->addTask($this->install($env));
-    return $collection->run();
-  }
-
-  /**
-   * Setup Drupal site.
-   */
-  public function install($env = 'local') {
+  public function setup($env = 'local', $opts = ['no-interaction|n' => false]) {
     $this->say('drupal:install');
     $config = Robo::config();
     $task = $this->drush()
       ->args('site-install')
-      ->arg($config['project.profile']);
+      ->arg($config->get('project.config.profile'))
+      ->arg('--ansi');
+
+    if ($opts['no-interaction']) {
+      $task->arg('--no-interaction');
+    }
+
     if ($env === 'ci') {
       $task->option('db-url', static::DB_URL_CI, '=');
     }

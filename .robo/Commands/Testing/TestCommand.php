@@ -17,7 +17,7 @@ class TestCommand extends RoboFile {
   public function runBehatTests() {
     $this->say("Running Behat tests...");
     chdir($this->getDocroot() . '/tests/behat');
-    return $this->taskExec('behat');
+    return $this->taskExec('behat')->run();
   }
 
   /**
@@ -27,7 +27,7 @@ class TestCommand extends RoboFile {
    */
   public function runPhpUnitTests() {
     $this->say("Running PHPUnit tests...");
-    return $this->taskExec('simple-phpunit --config ' . $this->getDocroot() . '/tests/phpunit/phpunit.xml ' . $this->getDocroot() . '/tests/phpunit/');
+    return $this->taskExec('simple-phpunit --config ' . $this->getDocroot() . '/tests/phpunit/phpunit.xml ' . $this->getDocroot() . '/tests/phpunit/')->run();
   }
 
 }

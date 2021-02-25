@@ -18,9 +18,9 @@ class BuildCommand extends RoboFile {
   public function buildFrontendReqs() {
     $this->say('build:frontend:reqs');
     $config = Robo::config();
-    if (is_dir($this->getDocroot() . '/docroot/themes/custom/' . $config->get('project.machine_name') . '_theme')) {
+    if (is_dir($this->getDocroot() . '/docroot/themes/custom/' . $config->get('project.config.theme'))) {
       $task = $this->taskExecStack()
-        ->dir($this->getDocroot() . '/docroot/themes/custom/' . $config->get('project.machine_name') . '_theme')
+        ->dir($this->getDocroot() . '/docroot/themes/custom/' . $config->get('project.config.theme'))
         ->exec('yarn install')
         ->exec('yarn build')
         ->run();
@@ -28,7 +28,7 @@ class BuildCommand extends RoboFile {
       return $task;
     }
     else {
-      $this->say("No theme found.");
+      $this->io()->note("No theme found. Moving on...");
     }
   }
 

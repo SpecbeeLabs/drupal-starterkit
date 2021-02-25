@@ -1,10 +1,20 @@
+# This file contains the site cofigurations used during project setup which will be executed
+# by running `composer init-repo`. Any changes made to the file will require the command
+# to be executed again. Lando containers might needs a rebuild as well based on the changes
+# being done.
 project:
-  machine_name: specbee123
+  machine_name: specbee
+  # Used for enforcing git commit message.
   prefix: SB
   human_name: "Specbee"
-  repo: git@bitbucket.org:specbee/project-repo.git
+  git: git@bitbucket.org:specbee/project-repo.git
   mail: no-reply@specbee.com
-  profile: lightning
+  # Configure the installation profile and the theme being used in the site.
+  config:
+    profile: lightning
+    theme: NULL
+# Used for setting up the Drush aliases. To properly use the Drush aliases remotely your SSH
+# keys needs to be added to the environments.
 remotes:
   dev:
     host: ""
@@ -16,6 +26,7 @@ remotes:
     user: ""
     root: ""
     uri: ""
+# Specify from where the database and files should be synced from.
 sync:
   remote: "dev"
   sanitize: true
