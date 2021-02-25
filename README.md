@@ -1,15 +1,15 @@
 # Specbee Drupal Startkit
 
-#### Intention
+## Intention
 This repository will provide as the base starterkit for Drupal projects.
 
-#### Requirements
+## Requirements
 - Lando
 - Docker
 - PHP >= 7.4
 - Composer v2
 
-#### Usage
+## Usage
 To create a new project, use the `composer-create` command to get the latest composer project.
 
 ```
@@ -28,7 +28,7 @@ Once, done run `composer init-repo` which will:
 
 Run `lando start` to spin up the containers used to run the application.
 
-#### Setup a new site or existing site
+## Setup a new site or existing site
 Once the lando containers are running, run the lando command
 
 ```
@@ -37,7 +37,7 @@ lando setup -n
 
 This will install a fresh Drupal site using the installation profile _project.config.profile_ mentioned in the `.robo/config.yml`. After which if existing configurations are present those will be imported and theme will be build if present.
 
-#### Tooling
+## Tooling
 The package provides certain lando tooling commands for easy access and run general commands.
 
 | Task                                            | Command                                         |
