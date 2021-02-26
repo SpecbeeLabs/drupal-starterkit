@@ -40,6 +40,7 @@ class ValidateCommand extends RoboFile {
   public function runPhpcs() {
     $tasks = [];
     $this->say("Validating Drupal coding standards...");
+    $this->installDependencies()->run();
     $tasks[] = $this->taskExecStack()
       ->exec('vendor/bin/phpcs --config-set installed_paths vendor/drupal/coder/coder_sniffer');
     $tasks[] = $this->taskFilesystemStack()
@@ -83,6 +84,7 @@ class ValidateCommand extends RoboFile {
       chdir($this->getDocroot() . '/docroot/themes/custom/' . $config->get('project.config.theme'));
       $task = $this->taskExecStack()
         ->stopOnFail()
+        ->exec('yarn install')
         ->exec('yarn lint')
         ->run();
 

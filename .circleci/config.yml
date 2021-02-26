@@ -16,7 +16,7 @@ restore_composer_cache: &restore_composer_cache
   - composer-v2-
 restore_node_cache: &restore_node_cache
   keys:
-  - node-v14-{{ checksum "docroot/themes/custom/specbee_theme/yarn.lock" }}
+  - node-v14-{{ checksum "docroot/themes/custom/theme/yarn.lock" }}
   - node-v14-
 
 ## Defines the cache saving mechanism.
@@ -30,8 +30,8 @@ save_composer_cache: &save_composer_cache
   key: composer-v2-{{ checksum "composer.lock" }}
 save_node_cache: &save_node_cache
   paths:
-    - ./docroot/themes/custom/specbee_theme/node_modules
-  key: node-v14-{{ checksum "docroot/themes/custom/specbee_theme/yarn.lock" }}
+    - ./docroot/themes/custom/theme/node_modules
+  key: node-v14-{{ checksum "docroot/themes/custom/theme/yarn.lock" }}
 
 # Filter branches
 filter_dev: &filter_dev
@@ -68,7 +68,7 @@ install_dependencies: &install_dependencies
     - restore_cache: *restore_node_cache
     - run:
         name: Build frontend requirements
-        command: robo build:frontend:reqs --load-from ../.robo/Commands/Frontend/BuildCommand.php
+        command: robo build:frontend:reqs --load-from .robo/Commands/Frontend/BuildCommand.php
     - save_cache: *save_node_cache
 
 # Validate code
@@ -79,7 +79,7 @@ validate_composer: &validate_composer
     - restore_cache: *restore_composer_cache
     - run:
         name: Validate composer.json & lock files.
-        command: robo validate:composer --load-from ../.robo/Commands/Testing/ValidateCommand.php
+        command: robo validate:composer --load-from .robo/Commands/Testing/ValidateCommand.php
     - save_cache: *save_composer_cache
 run_phpcs: &run_phpcs
   <<: *defaults
@@ -88,7 +88,7 @@ run_phpcs: &run_phpcs
     - restore_cache: *restore_composer_cache
     - run:
         name: Sniffing the custom modules and themes.
-        command: robo validate:phpcs:sniff ../.robo/Commands/Testing/ValidateCommand.php
+        command: robo validate:phpcs:sniff --load-from .robo/Commands/Testing/ValidateCommand.php
     - save_cache: *save_composer_cache
 lint_frontend_src: &lint_frontend_src
   <<: *defaults
@@ -98,7 +98,7 @@ lint_frontend_src: &lint_frontend_src
     - restore_cache: *restore_node_cache
     - run:
         name: Lint frontend source.
-        command: robo validate:frontend:src ../.robo/Commands/Testing/ValidateCommand.php
+        command: robo validate:frontend:src --load-from .robo/Commands/Testing/ValidateCommand.php
     - save_cache: *save_node_cache
     - save_cache: *save_composer_cache
 
@@ -110,13 +110,13 @@ test_run_behat: &test_run_behat
     - restore_cache: *restore_composer_cache
     - run:
         name: Install Drupal
-        command: robo setup ci ../.robo/Commands/Drupal/InstallCommand.php
+        command: robo setup ci --load-from .robo/Commands/Drupal/InstallCommand.php
     - run:
         name: Restart apache service
         command: service apache2 restart
     - run:
         name: Run Behat tests
-        command: robo test:run:behat ../.robo/Commands/Testing/TestCommand.php
+        command: robo test:run:behat --load-from .robo/Commands/Testing/TestCommand.php
     - save_cache: *save_composer_cache
 
 # Deploy
@@ -159,10 +159,10 @@ jobs:
     <<: *lint_frontend_src
   test:run:behat:
     <<: *test_run_behat
-  deploy:dev:
-    <<: *deploy_dev
-  deploy:uat:
-    <<: *deploy_uat
+  # deploy:dev:
+  #   <<: *deploy_dev
+  # deploy:uat:
+  #   <<: *deploy_uat
 
 # Declare a workflow that runs all of our jobs in parallel.
 workflows:
@@ -184,11 +184,11 @@ workflows:
             - validate:composer
             - run:phpcs
             - lint:frontend:src
-      - deploy:dev:
-          <<: *filter_dev
-          requires:
-            - test:run:behat
-      - deploy:uat:
-          <<: *filter_uat
-          requires:
-            - test:run:behat
+      # - deploy:dev:
+      #     <<: *filter_dev
+      #     requires:
+      #       - test:run:behat
+      # - deploy:uat:
+      #     <<: *filter_uat
+      #     requires:
+      #       - test:run:behat

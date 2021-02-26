@@ -30,6 +30,7 @@ class InstallCommand extends RoboFile {
   public function setup($env = 'local', $opts = ['no-interaction|n' => false]) {
     $this->say('drupal:install');
     $config = Robo::config();
+    $this->installDependencies()->run();
     $task = $this->drush()
       ->args('site-install')
       ->arg($config->get('project.config.profile'))
