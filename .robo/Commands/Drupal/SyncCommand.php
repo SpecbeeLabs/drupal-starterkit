@@ -23,6 +23,7 @@ class SyncCommand extends RoboFile {
     $collection->addTask(
       $this->drush()
         ->args('sql-sync')
+        ->args('--no-interaction')
         ->arg($remote_alias)
         ->arg($local_alias)
         ->option('--target-dump', sys_get_temp_dir() . '/tmp.target.sql.gz')
@@ -32,6 +33,7 @@ class SyncCommand extends RoboFile {
     if ($config->get('sync.sanitize') === TRUE) {
       $collection->addTask(
         $this->drush()
+          ->args('--no-interaction')
           ->args('sql-sanitize')
       );
     }
@@ -51,6 +53,7 @@ class SyncCommand extends RoboFile {
     $local_alias = '@self';
     $task = $this->drush()
       ->args('core-rsync')
+      ->args('--no-interaction')
       ->arg($remote_alias . ':%files')
       ->arg($local_alias . ':%files');
     $result = $task->run();

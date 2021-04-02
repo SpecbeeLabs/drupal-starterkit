@@ -107,15 +107,15 @@ tooling:
     service: appserver
     description: Run behat tests & PHPUnit test locally.
     cmd:
-      - robo test:run:phpunit -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php --ansi
-      - robo test:run:behat -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php --ansi
+      - robo test:run:phpunit --load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php --ansi
+      - robo test:run:behat --load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php --ansi
   test:run:behat:
     service: appserver
     description: Run behat tests locally.
     cmd:
-      - robo test:run:behat -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php --ansi
+      - robo test:run:behat --load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php --ansi
   test:run:phpunit:
     service: appserver
     description: Run PHPUnit test locally.
     cmd:
-      - robo test:run:phpunit -load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php --ansi
+      - robo test:run:phpunit --load-from $LANDO_MOUNT/.robo/Commands/Testing/TestCommand.php --ansi
