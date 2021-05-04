@@ -90,8 +90,8 @@
         "drupal-scaffold": [
             "DrupalComposer\\DrupalScaffold\\Plugin::scaffold"
         ],
-        "init-project": [
-            "robo init-project --ansi"
+        "init:project": [
+            "robo init:project --ansi"
         ]
     }
 }
