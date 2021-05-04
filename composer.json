@@ -81,8 +81,7 @@
     "prefer-stable": true,
     "scripts": {
         "post-create-project-cmd": [
-            "robo init:git",
-            "robo init:project"
+            "robo init:git --ansi"
         ],
         "post-install-cmd": [
             "DrupalProject\\composer\\ScriptHandler::createRequiredFiles",
@@ -90,6 +89,9 @@
         ],
         "drupal-scaffold": [
             "DrupalComposer\\DrupalScaffold\\Plugin::scaffold"
+        ],
+        "init-project": [
+            "robo init-project --ansi"
         ]
     }
 }
