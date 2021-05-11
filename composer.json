@@ -28,7 +28,16 @@
                 "web-root": "docroot/"
             },
             "file-mapping": {
-                "[web-root]/sites/default/default.settings.php": false
+                "[web-root]/sites/development.services.yml": {
+                    "mode": "replace",
+                    "path": "vendor/specbee/robo-tooling/settings/development.services.yml",
+                    "overwrite": false
+                },
+                "[web-root]/sites/default/default.settings.php": {
+                    "mode": "replace",
+                    "path": "docroot/core/assets/scaffold/files/default.settings.php",
+                    "overwrite": false
+                }
             }
         },
         "enable-patching": true,
@@ -84,14 +93,16 @@
             "robo init:git --ansi"
         ],
         "post-install-cmd": [
-            "DrupalProject\\composer\\ScriptHandler::createRequiredFiles",
-            "DrupalProject\\composer\\ScriptHandler::createLocalSettingsFile"
+            "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
         ],
         "drupal-scaffold": [
             "DrupalComposer\\DrupalScaffold\\Plugin::scaffold"
         ],
         "init:project": [
             "robo init:project --ansi"
+        ],
+        "setup:local": [
+            "DrupalProject\\composer\\ScriptHandler::createLocalSettingsFile"
         ]
     }
 }
