@@ -6,7 +6,10 @@
     "require": {
         "acquia/lightning": "~5.1.0",
         "cweagans/composer-patches": "^1.6.0",
+        "drupal/config_ignore": "^2.3",
+        "drupal/config_split": "^1.7",
         "drupal/core-composer-scaffold": "*",
+        "drupal/shield": "^1.4",
         "drush/drush": "^10",
         "oomphinc/composer-installers-extender": "^2.0",
         "specbee/robo-tooling": "1.x-dev"
