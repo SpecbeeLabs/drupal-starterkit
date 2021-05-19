@@ -26,6 +26,8 @@ Once, done run `composer init-repo` which will:
 - Configure the Landofile
 - Configure Grumphp for checking commits
 
+To create a local.settings.php run `composer setup-local`
+
 Run `lando start` to spin up the containers used to run the application.
 
 ## Setup a new site or existing site

@@ -102,7 +102,7 @@
             "DrupalComposer\\DrupalScaffold\\Plugin::scaffold"
         ],
         "init:project": [
-            "robo init:project --ansi"
+            "robo init:project --yes --ansi"
         ],
         "setup:local": [
             "DrupalProject\\composer\\ScriptHandler::createLocalSettingsFile"
