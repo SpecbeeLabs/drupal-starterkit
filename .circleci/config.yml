@@ -68,7 +68,7 @@ install_dependencies: &install_dependencies
     - restore_cache: *restore_node_cache
     - run:
         name: Build frontend requirements
-        command: robo build:frontend:reqs --load-from .robo/Commands/Frontend/BuildCommand.php
+        command: robo build:theme
     - save_cache: *save_node_cache
 
 # Validate code
@@ -79,7 +79,7 @@ validate_composer: &validate_composer
     - restore_cache: *restore_composer_cache
     - run:
         name: Validate composer.json & lock files.
-        command: robo validate:composer --load-from .robo/Commands/Testing/ValidateCommand.php
+        command: robo validate:composer
     - save_cache: *save_composer_cache
 run_phpcs: &run_phpcs
   <<: *defaults
@@ -88,7 +88,7 @@ run_phpcs: &run_phpcs
     - restore_cache: *restore_composer_cache
     - run:
         name: Sniffing the custom modules and themes.
-        command: robo validate:phpcs:sniff --load-from .robo/Commands/Testing/ValidateCommand.php
+        command: robo validate:phpcs
     - save_cache: *save_composer_cache
 lint_frontend_src: &lint_frontend_src
   <<: *defaults
@@ -98,7 +98,7 @@ lint_frontend_src: &lint_frontend_src
     - restore_cache: *restore_node_cache
     - run:
         name: Lint frontend source.
-        command: robo validate:frontend:src --load-from .robo/Commands/Testing/ValidateCommand.php
+        command: robo validate:theme
     - save_cache: *save_node_cache
     - save_cache: *save_composer_cache
 
@@ -110,13 +110,13 @@ test_run_behat: &test_run_behat
     - restore_cache: *restore_composer_cache
     - run:
         name: Install Drupal
-        command: robo setup ci --load-from .robo/Commands/Drupal/InstallCommand.php
+        command: robo setup -n --db-url=mysql://root@127.0.0.1/drupal
     - run:
         name: Restart apache service
         command: service apache2 restart
     - run:
         name: Run Behat tests
-        command: robo test:run:behat --load-from .robo/Commands/Testing/TestCommand.php
+        command: robo test:behat
     - save_cache: *save_composer_cache
 
 # Deploy
