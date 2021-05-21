@@ -3,7 +3,7 @@
 ## Defines images and working directory.
 defaults: &defaults
   docker:
-    - image: specbee/drupalci:9.1.4-php7.4-apache
+    - image: specbee/drupalci:9.1-php7.4-apache
     - image: mariadb:10.3
       environment:
         MYSQL_ALLOW_EMPTY_PASSWORD: 1
@@ -14,10 +14,6 @@ restore_composer_cache: &restore_composer_cache
   keys:
   - composer-v2-{{ checksum "composer.lock" }}
   - composer-v2-
-restore_node_cache: &restore_node_cache
-  keys:
-  - node-v14-{{ checksum "docroot/themes/custom/theme/yarn.lock" }}
-  - node-v14-
 
 ## Defines the cache saving mechanism.
 save_composer_cache: &save_composer_cache
@@ -28,10 +24,6 @@ save_composer_cache: &save_composer_cache
     - ./docroot/libraries
     - ./docroot/themes/contrib
   key: composer-v2-{{ checksum "composer.lock" }}
-save_node_cache: &save_node_cache
-  paths:
-    - ./docroot/themes/custom/theme/node_modules
-  key: node-v14-{{ checksum "docroot/themes/custom/theme/yarn.lock" }}
 
 # Filter branches
 filter_dev: &filter_dev
@@ -44,6 +36,13 @@ filter_uat: &filter_uat
   filters:
     branches:
       only:
+        - master
+
+ignore_branches: &ignore_branches
+  filters:
+    branches:
+      ignore:
+        - develop
         - master
 
 deploy: &deploy
@@ -65,11 +64,9 @@ install_dependencies: &install_dependencies
         name: Install composer dependencies
         command: composer install
     - save_cache: *save_composer_cache
-    - restore_cache: *restore_node_cache
     - run:
         name: Build frontend requirements
         command: robo build:theme
-    - save_cache: *save_node_cache
 
 # Validate code
 validate_composer: &validate_composer
@@ -95,11 +92,9 @@ lint_frontend_src: &lint_frontend_src
   steps:
     - checkout
     - restore_cache: *restore_composer_cache
-    - restore_cache: *restore_node_cache
     - run:
         name: Lint frontend source.
         command: robo validate:theme
-    - save_cache: *save_node_cache
     - save_cache: *save_composer_cache
 
 # Install Drupal & run Behat tests
@@ -159,36 +154,39 @@ jobs:
     <<: *lint_frontend_src
   test:run:behat:
     <<: *test_run_behat
-  # deploy:dev:
-  #   <<: *deploy_dev
-  # deploy:uat:
-  #   <<: *deploy_uat
+  deploy:dev:
+    <<: *deploy_dev
+  deploy:uat:
+    <<: *deploy_uat
 
 # Declare a workflow that runs all of our jobs in parallel.
 workflows:
   version: 2
-  build_artifact:
+  build:
     jobs:
-      - install:dependencies
+      - install:dependencies:
+          <<: *ignore_branches
       - validate:composer:
+          <<: *ignore_branches
           requires:
             - install:dependencies
       - run:phpcs:
+          <<: *ignore_branches
           requires:
             - install:dependencies
       - lint:frontend:src:
+          <<: *ignore_branches
           requires:
             - install:dependencies
       - test:run:behat:
+          <<: *ignore_branches
           requires:
             - validate:composer
             - run:phpcs
             - lint:frontend:src
-      # - deploy:dev:
-      #     <<: *filter_dev
-      #     requires:
-      #       - test:run:behat
-      # - deploy:uat:
-      #     <<: *filter_uat
-      #     requires:
-      #       - test:run:behat
+  deploy:
+    jobs:
+      - deploy:dev:
+          <<: *filter_dev
+      - deploy:uat:
+          <<: *filter_uat

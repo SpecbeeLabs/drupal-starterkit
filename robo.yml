@@ -13,11 +13,11 @@ project:
 # Configure the installation profile and the theme being used in the site.
 drupal:
   webroot: docroot
-  profile: standard
+  profile: lightning
   # Configure the theme path and build commands. Make it an empty string if there is
   # command available for a step and that will be skipped.
   theme:
-    path: web/themes/custom/theme
+    path: ${drupal.webroot}/themes/custom/theme
     build: yarn install
     compile: yarn build
     lint: yarn lint
