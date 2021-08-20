@@ -15,7 +15,16 @@
         "specbee/robo-tooling": "1.x-dev"
     },
     "require-dev": {
-        "ergebnis/composer-normalize": "^2.13"
+        "behat/behat": "^3.8",
+        "behat/mink-goutte-driver": "^1.2",
+        "behat/mink-selenium2-driver": "^1.4",
+        "bex/behat-screenshot": "^2.1",
+        "dmore/behat-chrome-extension": "^1.3",
+        "dmore/chrome-mink-driver": "^2.7",
+        "drupal/drupal-extension": "^4.1",
+        "ergebnis/composer-normalize": "^2.13",
+        "symfony/phpunit-bridge": "^4.1",
+        "vijaycs85/drupal-quality-checker": "^1.5"
     },
     "config": {
         "platform": {
@@ -27,20 +36,20 @@
     "extra": {
         "composer-exit-on-patch-failure": true,
         "drupal-scaffold": {
-            "locations": {
-                "web-root": "docroot/"
-            },
             "file-mapping": {
-                "[web-root]/sites/development.services.yml": {
-                    "mode": "replace",
-                    "path": "vendor/specbee/robo-tooling/settings/development.services.yml",
-                    "overwrite": false
-                },
                 "[web-root]/sites/default/default.settings.php": {
                     "mode": "replace",
-                    "path": "docroot/core/assets/scaffold/files/default.settings.php",
-                    "overwrite": false
+                    "overwrite": false,
+                    "path": "docroot/core/assets/scaffold/files/default.settings.php"
+                },
+                "[web-root]/sites/development.services.yml": {
+                    "mode": "replace",
+                    "overwrite": false,
+                    "path": "vendor/specbee/robo-tooling/settings/development.services.yml"
                 }
+            },
+            "locations": {
+                "web-root": "docroot/"
             }
         },
         "enable-patching": true,
@@ -92,11 +101,13 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-        "post-create-project-cmd": [
-            "robo init:git --ansi"
-        ],
         "post-install-cmd": [
             "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
+        ],
+        "post-create-project-cmd": [
+            "robo init:git --ansi",
+            "robo init:project --yes --ansi",
+            "DrupalProject\\composer\\ScriptHandler::createLocalSettingsFile"
         ],
         "drupal-scaffold": [
             "DrupalComposer\\DrupalScaffold\\Plugin::scaffold"

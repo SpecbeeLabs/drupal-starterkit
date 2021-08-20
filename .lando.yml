@@ -1,0 +1,58 @@
+name: specbee
+recipe: drupal9
+config:
+  webroot: docroot
+  php: 7.4
+  xdebug: false
+  drush: '*'
+  via: nginx
+services:
+  appserver:
+    build_as_root:
+      - curl -sL https://deb.nodesource.com/setup_14.x | bash -
+      - apt-get install -qq -y nodejs > /dev/null
+      - npm install -g gulp-cli > "/dev/null" 2>&1
+      - npm install -g yarn > "/dev/null" 2>&1
+    environment:
+      DRUSH_OPTIONS_ROOT: /app/docroot
+      DRUSH_OPTIONS_URI: specbee.lndo.site
+      MINK_DRIVER_ARGS: '["chrome", null, "http://chromedriver:4444/wd/hub"]'
+      MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", null, "http://chromedriver:4444/wd/hub"]'
+      MINK_DRIVER_CLASS: 'Drupal\FunctionalJavascriptTests\DrupalSelenium2Driver'
+      SIMPLETEST_DB: "mysql://drupal:drupal@database/drupal"
+      SIMPLETEST_BASE_URL: "https://specbee.lndo.site"
+      SYMFONY_DEPRECATIONS_HELPER: 'disabled'
+      PHP_IDE_CONFIG: "serverName=appserver"
+      BEHAT_PARAMS: '{"extensions" : {"Behat\\MinkExtension" : {"base_url" : "http://specbee.lndo.site"}, "Drupal\\DrupalExtension" : {"drush" :   {  "root":  "/app/docroot" }}}}'
+  chromedriver:
+    type: compose
+    services:
+      image: robcherry/docker-chromedriver:latest
+      expose:
+        - "4444"
+      environment:
+        CHROMEDRIVER_WHITELISTED_IPS: ""
+        CHROMEDRIVER_URL_BASE: "/wd/hub"
+      security_opt:
+        - seccomp:unconfined
+      command: ["/usr/local/bin/supervisord", "-c", "/etc/supervisord.conf"]
+  mailhog:
+    type: mailhog
+    hogfrom:
+      - appserver
+    portforward: true
+  database:
+    type: mariadb:10.4
+    creds:
+      user: drupal
+      password: drupal
+      database: drupal
+tooling:
+  chromedriver:
+    service: chromedriver
+    description: "Run chromedriver commands."
+  robo:
+    service: appserver
+    description: "Run robo tooling commands"
+    cmd:
+      - /app/vendor/bin/robo

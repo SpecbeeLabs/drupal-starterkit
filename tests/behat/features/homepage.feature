@@ -9,6 +9,11 @@ Feature: Web drivers
     Given I am on "/"
     Then the response status code should be 200
 
+  @javascript
+  Scenario: Load a page with Javascript
+    Given I am on "/"
+    Then I should be on "/"
+
   @api
   Scenario: Load page as authenticated user
     Given I am logged in as a user with the "authenticated user" role
