@@ -20,6 +20,11 @@ docroot/libraries
 docroot/themes/custom/*/node_modules
 docroot/themes/custom/*/dist
 
+# Ignore build artifacts
+bin/*
+tmp
+reports
+
 # OS X
 .DS_Store
 

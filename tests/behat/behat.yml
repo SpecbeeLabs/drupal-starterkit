@@ -14,7 +14,7 @@ default:
         - Drupal\DrupalExtension\Context\DrushContext
   extensions:
     Drupal\MinkExtension:
-      base_url: http://localhost
+      base_url: http://appserver_nginx
       files_path: 'files/'
       browser_name: chrome
       sessions:
@@ -29,7 +29,7 @@ default:
       screenshot_taking_mode: failed_steps
       image_drivers:
         local:
-          screenshot_directory: "failed_screenshots"
+          screenshot_directory: "reports/behat/failed_screenshots"
           clear_screenshot_directory: true
     Drupal\DrupalExtension:
       blackbox: ~
