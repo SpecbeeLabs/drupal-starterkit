@@ -23,8 +23,7 @@
         "dmore/chrome-mink-driver": "^2.7",
         "drupal/drupal-extension": "^4.1",
         "ergebnis/composer-normalize": "^2.13",
-        "symfony/phpunit-bridge": "^4.1",
-        "vijaycs85/drupal-quality-checker": "^1.5"
+        "symfony/phpunit-bridge": "^4.1"
     },
     "config": {
         "platform": {
