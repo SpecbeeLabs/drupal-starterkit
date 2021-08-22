@@ -1,6 +1,6 @@
 # CircleCI configuration file to build, lint, test & deploy.
 
-## Defines images and working directory.
+## The default images and working directory.
 defaults: &defaults
   docker:
     - image: specbee/drupalci:9.1-php7.4-apache
@@ -9,13 +9,13 @@ defaults: &defaults
         MYSQL_ALLOW_EMPTY_PASSWORD: 1
   working_directory: /app
 
-## Defines the cache restoring mechanism.
+## The cache restoring mechanism.
 restore_composer_cache: &restore_composer_cache
   keys:
   - composer-v2-{{ checksum "composer.lock" }}
   - composer-v2-
 
-## Defines the cache saving mechanism.
+## The cache saving mechanism.
 save_composer_cache: &save_composer_cache
   paths:
     - ./vendor
@@ -25,19 +25,7 @@ save_composer_cache: &save_composer_cache
     - ./docroot/themes/contrib
   key: composer-v2-{{ checksum "composer.lock" }}
 
-# Filter branches
-filter_dev: &filter_dev
-  filters:
-    branches:
-      only:
-        - develop
-
-filter_uat: &filter_uat
-  filters:
-    branches:
-      only:
-        - master
-
+## Branch filter for PR.
 ignore_branches: &ignore_branches
   filters:
     branches:
@@ -45,148 +33,91 @@ ignore_branches: &ignore_branches
         - develop
         - master
 
+## Deploy mechanism.
 deploy: &deploy
   name: Deploy Over SSH
   command: |
     set -e
-    ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
-    export BRANCH=$CIRCLE_BRANCH
-    echo SendEnv DOCROOT BRANCH >> ~/.ssh/config
-    ssh $SSH_USER@$SSH_HOST 'bash -s' < scripts/circlci/deploy.sh
+    ssh -oStrictHostKeyChecking=no $SSH_USER@$SSH_HOST 'bash -s' < .circleci/deploy.sh
 
-# Install dependencies
-install_dependencies: &install_dependencies
-  <<: *defaults
-  steps:
-    - checkout
-    - restore_cache: *restore_composer_cache
-    - run:
-        name: Install composer dependencies
-        command: composer install
-    - save_cache: *save_composer_cache
-    - run:
-        name: Build frontend requirements
-        command: robo build:theme
-
-# Validate code
-validate_composer: &validate_composer
-  <<: *defaults
-  steps:
-    - checkout
-    - restore_cache: *restore_composer_cache
-    - run:
-        name: Validate composer.json & lock files.
-        command: robo validate:composer
-    - save_cache: *save_composer_cache
-run_phpcs: &run_phpcs
-  <<: *defaults
-  steps:
-    - checkout
-    - restore_cache: *restore_composer_cache
-    - run:
-        name: Sniffing the custom modules and themes.
-        command: robo validate:phpcs
-    - save_cache: *save_composer_cache
-lint_frontend_src: &lint_frontend_src
-  <<: *defaults
-  steps:
-    - checkout
-    - restore_cache: *restore_composer_cache
-    - run:
-        name: Lint frontend source.
-        command: robo validate:theme
-    - save_cache: *save_composer_cache
-
-# Install Drupal & run Behat tests
-test_run_behat: &test_run_behat
-  <<: *defaults
-  steps:
-    - checkout
-    - restore_cache: *restore_composer_cache
-    - run:
-        name: Install Drupal
-        command: robo setup -n --db-url=mysql://root@127.0.0.1/drupal
-    - run:
-        name: Restart apache service
-        command: service apache2 restart
-    - run:
-        name: Run Behat tests
-        command: robo test:behat
-    - save_cache: *save_composer_cache
-
-# Deploy
-deploy_dev: &deploy_dev
-  <<: *defaults
-  steps:
-    - checkout
-    - run:
-        name: Set environment variables
-        command: |
-          echo "export DOCROOT=$DOCROOT_DEV" >> $BASH_ENV
-          echo "export SSH_USER=$SSH_USER_DEV" >> $BASH_ENV
-          echo "export SSH_HOST=$SSH_HOST_DEV" >> $BASH_ENV
-    - run:
-        <<: *deploy
-
-deploy_uat: &deploy_uat
-  <<: *defaults
-  steps:
-    - checkout
-    - run:
-        name: Set environment variables
-        command: |
-          echo "export DOCROOT=$DOCROOT_UAT" >> $BASH_ENV
-          echo "export SSH_USER=$SSH_USER_UAT" >> $BASH_ENV
-          echo "export SSH_HOST=$SSH_HOST_UAT" >> $BASH_ENV
-    - run:
-        <<: *deploy
-
-# Declare all of the jobs we should run.
+## Jobs.
 version: 2
 jobs:
-  install:dependencies:
-    <<: *install_dependencies
-  validate:composer:
-    <<: *validate_composer
-  run:phpcs:
-    <<: *run_phpcs
-  lint:frontend:src:
-    <<: *lint_frontend_src
-  test:run:behat:
-    <<: *test_run_behat
-  deploy:dev:
-    <<: *deploy_dev
-  deploy:uat:
-    <<: *deploy_uat
+  install:dependencies: # Install the composer dependencies & build the frontend assets.
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache: *restore_composer_cache
+      - run:
+          name: Install composer dependencies
+          command: composer install
+      - save_cache: *save_composer_cache
+      - run:
+          name: Build frontend requirements
+          command: robo build:theme
+  validate: # Run validations. Validates composers, PHPCS, and theme lint.
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache: *restore_composer_cache
+      - run:
+          name: Validate composer.json & lock files.
+          command: robo validate
+      - save_cache: *save_composer_cache
+  test:run:behat: # Run Behat tests.
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache: *restore_composer_cache
+      - run:
+          name: Install Drupal
+          command: robo setup -n --db-url=mysql://root@127.0.0.1/drupal
+      - run:
+          name: Restart apache service
+          command: service apache2 restart
+      - run:
+          name: Run Behat tests
+          command: robo test:behat
+      - save_cache: *save_composer_cache
+  deploy:dev: # Deploy to the dev environment.
+    docker:
+      - image: cimg/base:2021.04
+    steps:
+      - checkout
+      - run:
+          <<: *deploy
+  deploy:uat: # Deploy to Stage environmentm
+    docker:
+      - image: cimg/base:2021.04
+    steps:
+      - checkout
+      - run:
+          <<: *deploy
 
-# Declare a workflow that runs all of our jobs in parallel.
+## Workflow that runs all of our jobs in parallel.
 workflows:
   version: 2
   build:
     jobs:
       - install:dependencies:
           <<: *ignore_branches
-      - validate:composer:
-          <<: *ignore_branches
-          requires:
-            - install:dependencies
-      - run:phpcs:
-          <<: *ignore_branches
-          requires:
-            - install:dependencies
-      - lint:frontend:src:
+      - validate:
           <<: *ignore_branches
           requires:
             - install:dependencies
       - test:run:behat:
           <<: *ignore_branches
           requires:
-            - validate:composer
-            - run:phpcs
-            - lint:frontend:src
+            - validate
   deploy:
     jobs:
       - deploy:dev:
-          <<: *filter_dev
+          filters:
+            branches:
+              only:
+                - develop
       - deploy:uat:
-          <<: *filter_uat
+          filters:
+            branches:
+              only:
+                - master
