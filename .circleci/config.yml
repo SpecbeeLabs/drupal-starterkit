@@ -4,7 +4,6 @@
 defaults: &defaults
   docker:
     - image: specbee/drupalci:9.1-php7.4-apache
-    - image: mariadb:10.3
       environment:
         MYSQL_ALLOW_EMPTY_PASSWORD: 1
   working_directory: /app
@@ -34,6 +33,8 @@ ignore_branches: &ignore_branches
         - master
 
 ## Deploy mechanism.
+## The variables `SSH_USER` & `SSH_HOST` should be set in the CircleCI project settings.
+## https://circleci.com/docs/2.0/env-vars/#setting-an-environment-variable-in-a-project
 deploy: &deploy
   name: Deploy Over SSH
   command: |
@@ -55,7 +56,7 @@ jobs:
       - run:
           name: Build frontend requirements
           command: robo build:theme
-  validate: # Run validations. Validates composers, PHPCS, and theme lint.
+  test:static:analysis: # Run validations. Validates composers, PHPCS, and theme lint.
     <<: *defaults
     steps:
       - checkout
@@ -65,7 +66,12 @@ jobs:
           command: robo validate
       - save_cache: *save_composer_cache
   test:run:behat: # Run Behat tests.
-    <<: *defaults
+    docker:
+    - image: specbee/drupalci:9.1-php7.4-apache
+    - image: mariadb:10.3
+      environment:
+        MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    working_directory: /app
     steps:
       - checkout
       - restore_cache: *restore_composer_cache
@@ -101,14 +107,14 @@ workflows:
     jobs:
       - install:dependencies:
           <<: *ignore_branches
-      - validate:
+      - test:static:analysis:
           <<: *ignore_branches
           requires:
             - install:dependencies
       - test:run:behat:
           <<: *ignore_branches
           requires:
-            - validate
+            - test:static:analysis
   deploy:
     jobs:
       - deploy:dev:
