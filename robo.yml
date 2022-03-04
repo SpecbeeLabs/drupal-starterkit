@@ -13,7 +13,7 @@ project:
 # Configure the installation profile and the theme being used in the site.
 drupal:
   webroot: docroot
-  profile: lightning
+  profile: storm
   # Configure the theme path and build commands. Make it an empty string if there is
   # command available for a step and that will be skipped.
   theme:
@@ -23,7 +23,7 @@ drupal:
     lint: yarn lint
   # Configure the admin account details
   account:
-    name: jarvis
+    name: admin
     mail: no-reply@specbee.in
   config:
     path: 'config/sync'
