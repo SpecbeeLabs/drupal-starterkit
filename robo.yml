@@ -3,6 +3,7 @@
 # to be executed again. Lando containers might needs a rebuild as well based on the changes
 # being done.
 project:
+  php: 8.0
   machine_name: specbee
   # Used for enforcing git commit message.
   prefix: SB
