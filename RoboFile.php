@@ -1,5 +1,7 @@
 <?php
 
+// @codingStandardsIgnoreStart
+
 /**
  * This is project's console commands configuration for Robo task runner.
  *
@@ -14,3 +16,5 @@ class RoboFile extends Tasks
 {
     // define public methods as commands
 }
+
+// @codingStandardsIgnoreEnd
