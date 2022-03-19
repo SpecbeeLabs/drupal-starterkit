@@ -62,6 +62,12 @@ tests:
     config: tests/phpunit/phpunit.xml
     dir: tests/phpunit
 
+# Configure the flags for security update checks.
+security:
+  check:
+    drupal: true
+    composer: true
+
 # Used for setting up the Drush aliases. To properly use the Drush aliases remotely your SSH
 # keys needs to be added to the environments.
 remotes:
