@@ -44,17 +44,17 @@
         ]
     },
     "config": {
-        "platform": {
-            "php": "7.4"
-        },
-        "process-timeout": 0,
-        "sort-packages": true,
         "allow-plugins": {
             "drupal/core-composer-scaffold": true,
             "composer/installers": true,
             "cweagans/composer-patches": true,
             "oomphinc/composer-installers-extender": true
-        }
+        },
+        "platform": {
+            "php": "7.4"
+        },
+        "process-timeout": 0,
+        "sort-packages": true
     },
     "extra": {
         "composer-exit-on-patch-failure": true,
