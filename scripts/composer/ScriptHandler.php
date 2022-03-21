@@ -7,7 +7,6 @@ namespace DrupalProject\composer;
 use Composer\Script\Event;
 use Drupal\Core\Site\Settings;
 use DrupalFinder\DrupalFinder;
-use Robo\Robo;
 use Symfony\Component\Filesystem\Filesystem;
 use Webmozart\PathUtil\Path;
 
@@ -47,19 +46,19 @@ class ScriptHandler {
     // Prepare the settings file for installation.
     if (!$fs->exists($drupalRoot . '/sites/default/settings.php') && $fs->exists($drupalRoot . '/sites/default/default.settings.php')) {
       $fs->copy($drupalRoot . '/sites/default/default.settings.php', $drupalRoot . '/sites/default/settings.php');
-    }
-    else {
       require_once $drupalRoot . '/core/includes/bootstrap.inc';
       require_once $drupalRoot . '/core/includes/install.inc';
       new Settings([]);
-      $config_path = Path::makeRelative($drupalFinder->getComposerRoot() . Robo::config()->get('drupal.config.path'), $drupalRoot);
       $settings['settings']['config_sync_directory'] = (object) [
-        'value' => $config_path,
+        'value' => Path::makeRelative($drupalFinder->getComposerRoot() . '/config/sync', $drupalRoot),
         'required' => TRUE,
       ];
       drupal_rewrite_settings($settings, $drupalRoot . '/sites/default/settings.php');
       $fs->chmod($drupalRoot . '/sites/default/settings.php', 0666);
       $event->getIO()->write("Created a sites/default/settings.php file with chmod 0666");
+    }
+    else {
+      $event->getIO()->write("<info>All required files are created. Good to go!!!...</info>");
     }
 
     // Create the files directory with chmod 0777.

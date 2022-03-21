@@ -112,6 +112,7 @@
         ],
         "post-create-project-cmd": [
             "robo init:git --ansi",
+            "DrupalProject\\composer\\ScriptHandler::createRequiredFiles",
             "DrupalProject\\composer\\ScriptHandler::createLocalSettingsFile"
         ],
         "drupal-scaffold": [
