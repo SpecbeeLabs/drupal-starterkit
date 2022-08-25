@@ -24,7 +24,7 @@ drupal:
     lint: yarn lint
   # Configure the admin account details
   account:
-    name: admin
+    name: webmaster
     mail: no-reply@specbee.in
   config:
     path: 'config/sync'

@@ -4,13 +4,14 @@
     "license": "GPL-2.0-or-later",
     "type": "project",
     "require": {
+        "php": ">=7.4",
         "composer/installers": "^2.0",
         "cweagans/composer-patches": "^1.6.0",
         "drupal/config_ignore": "^2.3",
         "drupal/config_split": "^1.7",
         "drupal/core-composer-scaffold": "*",
         "drupal/shield": "^1.4",
-        "drush/drush": "^10",
+        "drush/drush": "^10.6 || ^11",
         "oomphinc/composer-installers-extender": "^2.0",
         "specbee/robo-tooling": "^1.0",
         "specbee/storm": "^1.0"
