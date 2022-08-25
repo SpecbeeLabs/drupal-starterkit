@@ -15,6 +15,14 @@ project:
 drupal:
   webroot: docroot
   profile: storm
+  # Configure the database credentials for site install.
+  database:
+    host: database
+    driver: mysql
+    creds:
+      user: drupal
+      password: drupal
+      database: drupal
   # Configure the theme path and build commands. Make it an empty string if there is
   # command available for a step and that will be skipped.
   theme:
@@ -67,20 +75,6 @@ security:
   check:
     drupal: true
     composer: true
-
-# Used for setting up the Drush aliases. To properly use the Drush aliases remotely your SSH
-# keys needs to be added to the environments.
-remotes:
-  dev:
-    host: ""
-    user: ""
-    root: ""
-    uri: ""
-  stage:
-    host: ""
-    user: ""
-    root: ""
-    uri: ""
 
 # Specify from where the database and files should be synced from.
 sync:

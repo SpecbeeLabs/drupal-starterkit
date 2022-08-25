@@ -26,6 +26,12 @@
         "drupal/drupal-extension": "^4.1",
         "drupal/profile_switcher": "^1.0@alpha",
         "ergebnis/composer-normalize": "^2.23",
+        "jangregor/phpstan-prophecy": "^1.0",
+        "mglaman/phpstan-drupal": "^1.1",
+        "phpstan/extension-installer": "^1.1",
+        "phpstan/phpstan": "^1.8",
+        "phpstan/phpstan-deprecation-rules": "^1.0",
+        "phpstan/phpstan-phpunit": "^1.1",
         "symfony/phpunit-bridge": "^4.1"
     },
     "repositories": {
@@ -53,7 +59,8 @@
             "drupal/core-composer-scaffold": true,
             "ergebnis/composer-normalize": true,
             "oomphinc/composer-installers-extender": true,
-            "phpro/grumphp": true
+            "phpro/grumphp": true,
+            "phpstan/extension-installer": true
         },
         "platform": {
             "php": "7.4"
