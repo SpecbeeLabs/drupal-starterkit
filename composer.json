@@ -13,8 +13,8 @@
         "drupal/shield": "^1.4",
         "drush/drush": "^10.6 || ^11",
         "oomphinc/composer-installers-extender": "^2.0",
-        "specbee/robo-tooling": "^1.x-dev",
-        "specbee/storm": "^1.x-dev"
+        "specbee/robo-tooling": "^2.5",
+        "specbee/storm": "^2.0"
     },
     "require-dev": {
         "behat/behat": "^3.8",
