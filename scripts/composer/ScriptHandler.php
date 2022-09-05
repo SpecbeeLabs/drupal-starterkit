@@ -49,16 +49,11 @@ class ScriptHandler {
       require_once $drupalRoot . '/core/includes/bootstrap.inc';
       require_once $drupalRoot . '/core/includes/install.inc';
       new Settings([]);
-      $settings['settings']['config_sync_directory'] = (object) [
-        'value' => Path::makeRelative($drupalFinder->getComposerRoot() . '/config/sync', $drupalRoot),
-        'required' => TRUE,
-      ];
-      drupal_rewrite_settings($settings, $drupalRoot . '/sites/default/settings.php');
       $fs->chmod($drupalRoot . '/sites/default/settings.php', 0666);
       $event->getIO()->write("Created a sites/default/settings.php file with chmod 0666");
     }
     else {
-      $event->getIO()->write("<info>All required files are created. Good to go!!!...</info>");
+      $event->getIO()->write("<info>Settings files is already present. Moving on!!!...</info>");
     }
 
     // Create the files directory with chmod 0777.
@@ -69,7 +64,7 @@ class ScriptHandler {
       $event->getIO()->write("Created a sites/default/files directory with chmod 0777");
     }
     else {
-      $event->getIO()->write("<info>The sites/default/files directory is already present!!!...</info>");
+      $event->getIO()->write("<info>The sites/default/files directory is already present.</info>");
     }
   }
 
@@ -85,6 +80,21 @@ class ScriptHandler {
       $fs->copy($drupalRoot . '/sites/example.settings.local.php', $drupalRoot . '/sites/default/settings.local.php');
       $fs->chmod($drupalRoot . '/sites/default/settings.local.php', 0666);
       $event->getIO()->write("Created a sites/default/settings.local.php file with chmod 0666 for local setup.");
+    }
+  }
+
+  /**
+   * Setup migration.settings.php file.
+   */
+  public static function createMigrationSettingsFile(Event $event) {
+    $fs = new Filesystem();
+    $drupalFinder = new DrupalFinder();
+    $drupalFinder->locateRoot(getcwd());
+    $drupalRoot = $drupalFinder->getDrupalRoot();
+    if (!$fs->exists($drupalRoot . '/sites/default/migration.settings.php') && $fs->exists($drupalRoot . '/sites/default/migration.settings.php')) {
+      $fs->copy($drupalRoot . '../vendor/specbee/robo-tooling/settings/migration.settings.php', $drupalRoot . '/sites/default/migration.settings.php');
+      $fs->chmod($drupalRoot . '/sites/default/migration.settings.php', 0666);
+      $event->getIO()->write("Created a sites/default/migration.settings.php file with chmod 0666 for migration connection settings.");
     }
   }
 

@@ -13,8 +13,8 @@
         "drupal/shield": "^1.4",
         "drush/drush": "^10.6 || ^11",
         "oomphinc/composer-installers-extender": "^2.0",
-        "specbee/robo-tooling": "^2.0",
-        "specbee/storm": "^1.0"
+        "specbee/robo-tooling": "^1.x-dev",
+        "specbee/storm": "^1.x-dev"
     },
     "require-dev": {
         "behat/behat": "^3.8",
@@ -75,7 +75,12 @@
                 "[web-root]/sites/default/default.settings.php": {
                     "mode": "replace",
                     "overwrite": false,
-                    "path": "docroot/core/assets/scaffold/files/default.settings.php"
+                    "path": "vendor/specbee/robo-tooling/settings/default.settings.php"
+                },
+                "[web-root]/sites/example.settings.local.php": {
+                    "mode": "replace",
+                    "overwrite": false,
+                    "path": "vendor/specbee/robo-tooling/settings/default.settings.local.php"
                 },
                 "[web-root]/sites/development.services.yml": {
                     "mode": "replace",
@@ -135,6 +140,15 @@
         ],
         "setup:local": [
             "DrupalProject\\composer\\ScriptHandler::createLocalSettingsFile"
+        ],
+        "setup:migration-connection": [
+            "DrupalProject\\composer\\ScriptHandler::createMigrationSettingsFile"
+        ],
+        "nuke": [
+            "rm -rf docroot/modules/contrib",
+            "rm -rf docroot/themes/contrib",
+            "rm -rf docroot/profiles/contrib",
+            "rm -rf vendor"
         ]
     }
 }
