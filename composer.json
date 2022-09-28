@@ -14,7 +14,7 @@
         "drush/drush": "^10.6 || ^11",
         "oomphinc/composer-installers-extender": "^2.0",
         "specbee/robo-tooling": "^2.5",
-        "specbee/storm": "^2.0"
+        "specbee/storm": "1.0.x-dev"
     },
     "require-dev": {
         "behat/behat": "^3.8",
