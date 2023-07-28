@@ -4,10 +4,10 @@
 # being done.
 project:
   php: "8.1"
-  machine_name: specbee
+  machine_name: storm
   # Used for enforcing git commit message.
-  prefix: SB
-  human_name: "Specbee"
+  prefix: ST
+  human_name: "Storm CMS"
   git:
     remote: ''
 
@@ -26,7 +26,7 @@ drupal:
   # Configure the theme path and build commands. Make it an empty string if there is
   # command available for a step and that will be skipped.
   theme:
-    path: ${drupal.webroot}/themes/custom/theme
+    path: ${drupal.webroot}/themes/custom/storm_theme
     build: yarn install
     compile: yarn build
     lint: yarn lint
